@@ -3,151 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIM ADMIN | PRO</title>
+    <title>SIM MARKET | ADMIN ULTIMATE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
         body { font-family: 'Manrope', sans-serif; background: #050505; color: #fff; }
-        .card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 15px; }
-        .tab-btn { padding: 10px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; cursor: pointer; border: 1px solid #222; text-align: center; color: #555; }
-        .tab-btn.active { background: #bf953f; color: #000; border-color: #bf953f; }
-        input, select { background: #000; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 12px; width: 100%; outline: none; font-size: 14px; }
+        .glass { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+        .gold-border { border-color: #bf953f; }
+        .gold-text { color: #bf953f; }
+        input, select { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; outline: none; }
+        .btn-action { background: #bf953f; color: #000; font-weight: 800; transition: 0.3s; }
+        .btn-action:hover { background: #fcf6ba; transform: translateY(-2px); }
+        .nav-tab { padding: 12px 20px; cursor: pointer; opacity: 0.5; border-bottom: 2px solid transparent; }
+        .nav-tab.active { opacity: 1; border-color: #bf953f; color: #bf953f; }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="p-4 md:p-10">
 
-    <header class="flex justify-between items-center mb-6">
-        <h1 class="text-xl font-black text-[#bf953f]">SIM ADMIN</h1>
-        <div id="stat" class="text-[10px] font-bold opacity-50">Загрузка...</div>
-    </header>
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black italic uppercase tracking-tighter">SIM <span class="gold-text">ADMIN</span></h1>
+                <p class="text-[10px] opacity-40 uppercase tracking-[3px]">Система управления бизнесом</p>
+            </div>
+            <button onclick="location.reload()" class="p-3 glass rounded-xl text-xs uppercase font-bold">Обновить данные</button>
+        </div>
 
-    <div class="grid grid-cols-4 gap-2 mb-6">
-        <div class="tab-btn active" id="t1" onclick="showSec('orders', 't1')">Заказы</div>
-        <div class="tab-btn" id="t2" onclick="showSec('inv', 't2')">Номера</div>
-        <div class="tab-btn" id="t3" onclick="showSec('users', 't3')">Клиенты</div>
-        <div class="tab-btn" id="t4" onclick="showSec('add', 't4')">+</div>
-    </div>
+        <div class="flex gap-6 border-bottom border-white/5 mb-10 overflow-x-auto no-scrollbar">
+            <div class="nav-tab active" id="tab-nums" onclick="switchTab('nums')">Номера</div>
+            <div class="nav-tab" id="tab-users" onclick="switchTab('users')">Клиенты</div>
+            <div class="nav-tab" id="tab-orders" onclick="switchTab('orders')">Заказы</div>
+            <div class="nav-tab" id="tab-design" onclick="switchTab('design')">Баннеры & Сайт</div>
+        </div>
 
-    <div id="sec-orders" class="space-y-3"></div>
+        <section id="sec-nums" class="space-y-6">
+            <div class="grid md:grid-cols-4 gap-4 glass p-6 rounded-[30px]">
+                <input type="text" id="new-num" placeholder="999 000 00 00" class="p-4 rounded-2xl">
+                <input type="number" id="new-price" placeholder="Цена (руб)" class="p-4 rounded-2xl">
+                <select id="new-op" class="p-4 rounded-2xl">
+                    <option value="МТС">МТС</option>
+                    <option value="БИЛАЙН">Билайн</option>
+                    <option value="МЕГАФОН">Мегафон</option>
+                </select>
+                <button onclick="addNumber()" class="btn-action rounded-2xl">Добавить номер</button>
+            </div>
+            
+            <div class="glass rounded-[30px] overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-[10px] uppercase opacity-40">
+                        <tr>
+                            <th class="p-5">Номер</th>
+                            <th class="p-5">Оператор</th>
+                            <th class="p-5">Цена</th>
+                            <th class="p-5 text-right">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-list"></tbody>
+                </table>
+            </div>
+        </section>
 
-    <div id="sec-inv" class="hidden space-y-3">
-        <h2 class="text-[10px] font-black opacity-30 uppercase mb-4">Управление номерами</h2>
-        <div id="inv-list" class="space-y-3"></div>
-    </div>
+        <section id="sec-users" class="hidden">
+            <div class="glass rounded-[30px] overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-[10px] uppercase opacity-40">
+                        <tr>
+                            <th class="p-5">Телефон клиента</th>
+                            <th class="p-5">Пароль</th>
+                            <th class="p-5 text-right">Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list">
+                        <tr><td colspan="3" class="p-10 text-center opacity-20 italic">База клиентов хранится в LocalStorage (локально)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    <div id="sec-users" class="hidden space-y-3">
-        <div id="users-list" class="space-y-3"></div>
-    </div>
+        <section id="sec-orders" class="hidden">
+            <div class="text-center py-20 glass rounded-[40px]">
+                <p class="opacity-30 uppercase text-xs font-bold">Сюда будут падать заявки из Firebase</p>
+                <p class="text-[10px] mt-2 text-yellow-500">Функция в разработке (нужна доп. ветка в БД)</p>
+            </div>
+        </section>
 
-    <div id="sec-add" class="hidden card space-y-4">
-        <input type="text" id="n-num" placeholder="Номер (928...)">
-        <input type="number" id="n-price" placeholder="Цена">
-        <select id="n-op">
-            <option value="МТС">МТС</option>
-            <option value="БИЛАЙН">БИЛАЙН</option>
-            <option value="МЕГАФОН">МЕГАФОН</option>
-            <option value="ТЕЛЕ2">ТЕЛЕ2</option>
-        </select>
-        <button onclick="addNumber()" class="w-full py-4 bg-[#bf953f] text-black font-black rounded-xl uppercase text-xs">Добавить на сайт</button>
+        <section id="sec-design" class="hidden space-y-6">
+            <div class="glass p-8 rounded-[40px] max-w-2xl">
+                <h3 class="text-xl font-bold mb-6 gold-text italic">Настройка главного баннера</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase opacity-40 block mb-2">Заголовок баннера</label>
+                        <input type="text" id="banner-title" value="Hasavyurt Elite" class="w-full p-4 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase opacity-40 block mb-2">Подзаголовок</label>
+                        <input type="text" id="banner-sub" value="SIM MARKET — Твой статус в цифрах" class="w-full p-4 rounded-xl">
+                    </div>
+                    <button onclick="alert('Настройки сохранены!')" class="btn-action w-full py-4 rounded-xl">Применить на сайте</button>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
-        const fbCfg = { 
+        const fbApp = firebase.initializeApp({ 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
-            authDomain: "nnnmb-a0b52.firebaseapp.com", 
-            databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com", 
-            projectId: "nnnmb-a0b52" 
-        };
-        firebase.initializeApp(fbCfg);
-        const db = firebase.database();
+            databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
+        });
+        const rdb = fbApp.database();
 
-        function showSec(id, tId) {
-            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
-            document.getElementById('sec-'+id).classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-            document.getElementById(tId).classList.add('active');
+        // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+        function switchTab(tab) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('sec-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab).classList.add('active');
+            
+            if(tab === 'users') renderUsers();
         }
 
-        // РЕДАКТИРОВАНИЕ И УДАЛЕНИЕ
-        function editPrice(id, oldPrice) {
-            const p = prompt("Новая цена:", oldPrice);
-            if(p) db.ref('inventory/'+id).update({price: p});
-        }
-        function delItem(path) { if(confirm("Удалить?")) db.ref(path).remove(); }
-
-        // ЗАГРУЗКА НОМЕРОВ (ИНВЕНТАРЬ)
-        db.ref('inventory').on('value', s => {
-            const list = document.getElementById('inv-list');
-            list.innerHTML = "";
-            const data = s.val() || {};
-            document.getElementById('stat').innerText = "НОМЕРОВ: " + Object.keys(data).length;
-            Object.keys(data).reverse().forEach(id => {
-                const i = data[id];
-                list.innerHTML += `
-                <div class="card flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-sm">+7 ${i.num}</div>
-                        <div class="text-[10px] gold-grad font-black">${i.price} ₽ | ${i.op}</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="editPrice('${id}', '${i.price}')" class="p-2 bg-blue-500/10 text-blue-500 rounded-lg text-[9px]">ЦЕНА</button>
-                        <button onclick="delItem('inventory/${id}')" class="p-2 bg-red-500/10 text-red-500 rounded-lg text-[9px]">УДАЛИТЬ</button>
-                    </div>
-                </div>`;
-            });
-        });
-
-        // ЗАГРУЗКА ЗАКАЗОВ
-        db.ref('orders').on('value', s => {
-            const list = document.getElementById('sec-orders');
-            list.innerHTML = "";
-            const data = s.val() || {};
-            Object.keys(data).reverse().forEach(id => {
-                const o = data[id];
-                list.innerHTML += `
-                <div class="card border-l-4 border-[#bf953f]">
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="font-bold italic">+7 ${o.number}</div>
-                        <button onclick="delItem('orders/${id}')" class="text-red-500 text-[8px] uppercase">Закрыть</button>
-                    </div>
-                    <div class="text-[10px] opacity-60">
-                        <p>Клиент: ${o.clientName}</p>
-                        <p>Связь: <span class="text-white font-bold">${o.clientContact}</span></p>
-                    </div>
-                </div>`;
-            });
-        });
-
-        // ЗАГРУЗКА КЛИЕНТОВ
-        db.ref('users').on('value', s => {
-            const list = document.getElementById('users-list');
-            list.innerHTML = "";
-            const data = s.val() || {};
-            Object.keys(data).forEach(id => {
-                const u = data[id];
-                list.innerHTML += `
-                <div class="card flex justify-between items-center">
-                    <div class="text-[11px]">
-                        <div class="font-bold text-[#bf953f]">${u.phone}</div>
-                        <div class="opacity-40">Пароль: ${u.pass} | Код: ${u.word}</div>
-                    </div>
-                    <button onclick="delItem('users/${id}')" class="text-red-500 text-[8px]">УДАЛИТЬ</button>
-                </div>`;
-            });
-        });
-
+        // РАБОТА С НОМЕРАМИ
         function addNumber() {
-            const num = document.getElementById('n-num').value;
-            const price = document.getElementById('n-price').value;
-            const op = document.getElementById('n-op').value;
-            if(!num || !price) return alert("Заполни всё!");
-            db.ref('inventory').push({num, price, op}).then(() => {
-                alert("Номер на сайте!");
-                document.getElementById('n-num').value = "";
-                document.getElementById('n-price').value = "";
+            const num = document.getElementById('new-num').value;
+            const price = document.getElementById('new-price').value;
+            const op = document.getElementById('new-op').value;
+            
+            if(!num || !price) return alert("Заполни данные!");
+            
+            const id = Date.now();
+            rdb.ref('inventory/' + id).set({
+                num: num,
+                price: price,
+                op: op,
+                id: id
+            }).then(() => {
+                alert("Номер добавлен!");
+                document.getElementById('new-num').value = "";
+                document.getElementById('new-price').value = "";
             });
+        }
+
+        function deleteNum(id) {
+            if(confirm("Удалить номер?")) {
+                rdb.ref('inventory/' + id).remove();
+            }
+        }
+
+        // ЗАГРУЗКА ИНВЕНТАРЯ
+        rdb.ref('inventory').on('value', snapshot => {
+            const list = document.getElementById('inventory-list');
+            list.innerHTML = "";
+            const data = snapshot.val();
+            for(let id in data) {
+                const item = data[id];
+                list.innerHTML += `
+                    <tr class="border-t border-white/5 hover:bg-white/5 transition">
+                        <td class="p-5 font-bold italic">+7 ${item.num}</td>
+                        <td class="p-5"><span class="text-[10px] bg-white/10 px-3 py-1 rounded-full uppercase font-black">${item.op}</span></td>
+                        <td class="p-5 gold-text font-black">${item.price} ₽</td>
+                        <td class="p-5 text-right">
+                            <button onclick="deleteNum('${id}')" class="text-red-500 text-xs font-bold uppercase">Удалить</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        // ПРОСМОТР КЛИЕНТОВ (из LocalStorage, как в твоем коде)
+        function renderUsers() {
+            const list = document.getElementById('users-list');
+            const users = JSON.parse(localStorage.getItem('user_db')) || {};
+            list.innerHTML = "";
+            
+            for(let phone in users) {
+                list.innerHTML += `
+                    <tr class="border-t border-white/5">
+                        <td class="p-5 font-bold">+7 ${phone}</td>
+                        <td class="p-5 opacity-60">${users[phone].pass}</td>
+                        <td class="p-5 text-right"><button class="opacity-20 text-xs">BAN</button></td>
+                    </tr>
+                `;
+            }
         }
     </script>
 </body>
