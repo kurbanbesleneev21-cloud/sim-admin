@@ -2,223 +2,144 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIM ADMIN | NOTIFIER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM ADMIN | CONTROL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
-        body { font-family: 'Manrope', sans-serif; background: #050505; color: #fff; margin: 0; padding-bottom: 80px; }
-        .gold-text { background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card { background: #0d0d0d; border: 1px solid rgba(191,149,63,0.1); border-radius: 20px; padding: 15px; }
-        .input-dark { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 12px; width: 100%; color: #fff; outline: none; font-size: 13px; }
-        .tab-btn { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #444; flex: 1; text-align: center; padding: 15px 0; border-bottom: 2px solid transparent; }
-        .tab-active { color: #bf953f; border-color: #bf953f; background: rgba(191,149,63,0.05); }
-        .btn-gold { background: #bf953f; color: #000; font-weight: 800; border-radius: 12px; padding: 12px; width: 100%; text-transform: uppercase; border: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; background: #0a0a0a; color: #fff; }
+        .gold-border { border: 1px solid rgba(191,149,63,0.3); }
+        .tab-btn { padding: 12px; border-radius: 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; border: 1px solid #222; color: #555; transition: 0.3s; }
+        .tab-btn.active { background: #bf953f; color: #000; border-color: #bf953f; }
+        .card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; }
     </style>
 </head>
-<body>
+<body class="p-4 pb-20">
 
-    <div id="auth" class="fixed inset-0 bg-black z-[200] flex items-center justify-center p-6 text-center">
-        <div class="w-full max-w-xs">
-            <h1 class="text-3xl font-black gold-text italic mb-6">SIM CONTROL</h1>
-            <input type="password" id="pass" placeholder="ПИН-КОД" class="input-dark text-center mb-4 text-xl tracking-[10px]">
-            <button onclick="login()" class="btn-gold">ВОЙТИ</button>
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-black text-[#bf953f]">SIM ADMIN</h1>
+            <p class="text-[10px] opacity-40 uppercase tracking-widest">Управление системой</p>
         </div>
+        <div class="text-right">
+            <div id="count-users" class="text-[10px] font-bold text-green-500">Загрузка...</div>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-3 gap-2 mb-8">
+        <div class="tab-btn active" id="t1" onclick="showSec('orders', 't1')">Заказы</div>
+        <div class="tab-btn" id="t2" onclick="showSec('users', 't2')">Клиенты</div>
+        <div class="tab-btn" id="t3" onclick="showSec('add', 't3')">+ Номер</div>
     </div>
 
-    <div id="app" class="hidden">
-        <header class="p-6 bg-[#080808] border-b border-white/5 flex justify-between items-center">
-            <div>
-                <p class="text-[8px] opacity-30 uppercase tracking-widest mb-1">Admin Panel</p>
-                <div class="flex gap-4">
-                    <div class="text-emerald-500 font-black text-lg" id="stat-v">0 <span class="text-[9px] opacity-50">Визиты</span></div>
-                    <div class="text-white font-black text-lg" id="stat-l">0 <span class="text-[9px] opacity-50">Заявки</span></div>
-                </div>
-            </div>
-            <button onclick="location.reload()" class="bg-white/5 p-2 rounded-lg text-sm">🔄</button>
-        </header>
+    <div id="sec-orders" class="space-y-4">
+        <h2 class="text-sm font-bold uppercase opacity-30">Новые заявки</h2>
+        <div id="orders-list" class="space-y-3"></div>
+    </div>
 
-        <nav class="flex sticky top-0 bg-black/95 backdrop-blur-lg z-50 border-b border-white/5">
-            <button onclick="showTab('leads')" id="btn-leads" class="tab-btn tab-active">Заявки</button>
-            <button onclick="showTab('inv')" id="btn-inv" class="tab-btn">Склад</button>
-            <button onclick="showTab('add')" id="btn-add" class="tab-btn">Добавить</button>
-            <button onclick="showTab('chat')" id="btn-chat" class="tab-btn">Чат</button>
-        </nav>
+    <div id="sec-users" class="hidden space-y-4">
+        <h2 class="text-sm font-bold uppercase opacity-30">База пользователей</h2>
+        <div id="users-list" class="space-y-3"></div>
+    </div>
 
-        <main class="p-4 space-y-4">
-            <div id="tab-leads" class="space-y-3"><div id="list-leads"></div></div>
-            
-            <div id="tab-inv" class="hidden space-y-3">
-                <input type="text" id="search" oninput="renderInv()" placeholder="Поиск номера..." class="input-dark">
-                <div id="list-inv"></div>
-            </div>
-
-            <div id="tab-add" class="hidden card">
-                <textarea id="new-nums" placeholder="Номера через пробел..." class="input-dark h-24 mb-3"></textarea>
-                <input type="number" id="new-price" placeholder="Цена (₽)" class="input-dark mb-3">
-                <select id="new-op" class="input-dark mb-4">
-                    <option value="mts">МТС</option><option value="megafon">Мегафон</option><option value="beeline">Билайн</option><option value="tele2">Tele2</option>
-                </select>
-                <button onclick="addNumbers()" class="btn-gold">Добавить на склад</button>
-            </div>
-
-            <div id="tab-chat" class="hidden space-y-3">
-                <div id="chat-list" class="space-y-2"></div>
-                <div id="chat-box" class="card h-[400px] flex flex-col hidden border-[#bf953f]/30">
-                    <div id="chat-msgs" class="flex-1 overflow-y-auto space-y-2 text-xs mb-3 flex flex-col p-2"></div>
-                    <div class="flex gap-2 p-1">
-                        <input type="text" id="chat-in" class="input-dark flex-1" placeholder="Ответ...">
-                        <button onclick="sendAdminMsg()" class="btn-gold !w-14">></button>
-                    </div>
-                </div>
-            </div>
-        </main>
+    <div id="sec-add" class="hidden card space-y-4">
+        <h2 class="text-sm font-bold uppercase gold-grad">Добавить в продажу</h2>
+        <input type="text" id="n-num" placeholder="Номер (без +7)" class="w-full bg-[#050505] p-4 rounded-xl border border-[#222] outline-none">
+        <input type="number" id="n-price" placeholder="Цена (руб)" class="w-full bg-[#050505] p-4 rounded-xl border border-[#222] outline-none">
+        <select id="n-op" class="w-full bg-[#050505] p-4 rounded-xl border border-[#222] outline-none text-gray-400">
+            <option value="МТС">МТС</option>
+            <option value="БИЛАЙН">БИЛАЙН</option>
+            <option value="МЕГАФОН">МЕГАФОН</option>
+            <option value="ТЕЛЕ2">ТЕЛЕ2</option>
+        </select>
+        <button onclick="addNumber()" class="w-full py-4 bg-[#bf953f] text-black font-black rounded-xl uppercase text-xs">Опубликовать</button>
     </div>
 
     <script>
-        // ТВОИ ДАННЫЕ TELEGRAM
-        const TG_TOKEN = "8569235049:AAEsaW4ME-Ql6036i04tIbj--IPNT6JdroE"; 
-        const TG_ID = "8768514374";
-
-        const cfg = { 
+        const fbCfg = { 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             authDomain: "nnnmb-a0b52.firebaseapp.com", 
             databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com", 
             projectId: "nnnmb-a0b52" 
         };
-        firebase.initializeApp(cfg);
+        firebase.initializeApp(fbCfg);
         const db = firebase.database();
 
-        let allStock = {};
-        let currentChatId = '';
-        let initialLoad = true; // Чтобы не слать старые заявки при открытии
-
-        function sendTG(text) {
-            const msg = encodeURIComponent(text);
-            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_ID}&text=${msg}&parse_mode=HTML`);
+        function showSec(id, tabId) {
+            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
         }
 
-        function login() {
-            if(document.getElementById('pass').value === '7777') {
-                document.getElementById('auth').style.display = 'none';
-                document.getElementById('app').classList.remove('hidden');
-                init();
-            } else { alert("Неверный код!"); }
-        }
-
-        function showTab(t) {
-            ['leads','inv','add','chat'].forEach(x => {
-                document.getElementById('tab-'+x).classList.add('hidden');
-                document.getElementById('btn-'+x).classList.remove('tab-active');
+        // ДОБАВЛЕНИЕ НОМЕРА
+        function addNumber() {
+            const num = document.getElementById('n-num').value;
+            const price = document.getElementById('n-price').value;
+            const op = document.getElementById('n-op').value;
+            if(!num || !price) return alert("Заполни поля!");
+            db.ref('inventory').push({num, price, op}).then(() => {
+                alert("Номер добавлен!");
+                location.reload();
             });
-            document.getElementById('tab-'+t).classList.remove('hidden');
-            document.getElementById('btn-'+t).classList.add('tab-active');
         }
 
-        function init() {
-            // Слушаем новые ЗАЯВКИ
-            db.ref('leads').on('child_added', s => {
-                const l = s.val();
-                if(!initialLoad) {
-                    sendTG(`🚀 <b>НОВАЯ ЗАЯВКА!</b>\n📱 Номер: +7 ${l.num}\n👤 Клиент: ${l.fio}\n📞 Контакт: ${l.contact}`);
-                }
-                renderLeads();
-            });
-
-            // Слушаем новые СООБЩЕНИЯ В ЧАТАХ
-            db.ref('chats').on('child_changed', s => {
-                const data = s.val();
-                const chatId = s.key;
-                const lastMsg = data.metadata?.lastMsg || "";
-                // Уведомляем, если последнее сообщение НЕ от админа
-                if(!lastMsg.startsWith("Админ:")) {
-                    sendTG(`💬 <b>НОВОЕ СООБЩЕНИЕ</b>\n🆔 ID: ${chatId}\n✉️ Текст: ${lastMsg}`);
-                }
-            });
-
-            // Обычные функции отрисовки
-            db.ref('leads').on('value', s => { renderLeads(s.val()); });
-            db.ref('inventory').on('value', s => { allStock = s.val() || {}; renderInv(); });
-            db.ref('chats').on('value', s => { renderChatList(s.val() || {}); });
-            db.ref('stats/visits').on('value', s => { document.getElementById('stat-v').innerText = s.val() || 0; });
-            
-            // После первой загрузки включаем уведомления
-            setTimeout(() => { initialLoad = false; }, 2000);
-        }
-
-        function renderLeads(leads) {
-            const list = document.getElementById('list-leads');
+        // СПИСОК ЗАКАЗОВ
+        db.ref('orders').on('value', s => {
+            const list = document.getElementById('orders-list');
             list.innerHTML = "";
-            const data = leads || {};
-            document.getElementById('stat-l').innerText = Object.keys(data).length;
-            Object.keys(data).reverse().forEach(id => {
-                const l = data[id];
-                list.innerHTML += `<div class="card mb-2 border-l-4 border-yellow-600">
-                    <div class="flex justify-between"><b>+7 ${l.num}</b><button onclick="db.ref('leads/${id}').remove()" class="text-red-500 text-[10px]">УДАЛИТЬ</button></div>
-                    <p class="text-sm opacity-80">${l.fio}</p><p class="text-xs text-emerald-400">${l.contact}</p>
-                </div>`;
-            });
-        }
-
-        function renderInv() {
-            const list = document.getElementById('list-inv');
-            const q = document.getElementById('search').value.toLowerCase();
-            list.innerHTML = "";
-            Object.keys(allStock).reverse().forEach(k => {
-                const i = allStock[k];
-                if(i.num.includes(q)) {
-                    list.innerHTML += `<div class="card flex justify-between items-center mb-2">
-                        <span>+7 ${i.num} <small class="gold-text">${i.price}₽</small></span>
-                        <button onclick="db.ref('inventory/${k}').remove()" class="text-red-900 text-[10px]">УДАЛИТЬ</button>
+            const data = s.val();
+            if(!data) list.innerHTML = "<p class='opacity-20 text-xs'>Заказов пока нет</p>";
+            else {
+                Object.keys(data).reverse().forEach(id => {
+                    const o = data[id];
+                    list.innerHTML += `
+                    <div class="card border-l-4 border-l-[#bf953f]">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="text-lg font-bold italic">+7 ${o.number}</div>
+                            <button onclick="delItem('orders/${id}')" class="text-[9px] text-red-500 uppercase">Удалить</button>
+                        </div>
+                        <div class="text-[11px] space-y-1 opacity-70">
+                            <p>👤 Клиент: <span class="text-white">${o.clientName}</span></p>
+                            <p>📞 Связь: <span class="text-[#bf953f] font-bold">${o.clientContact}</span></p>
+                            <p>📅 Дата: ${o.date}</p>
+                        </div>
                     </div>`;
-                }
-            });
-        }
-
-        function renderChatList(chats) {
-            const list = document.getElementById('chat-list');
-            list.innerHTML = "";
-            Object.keys(chats).forEach(id => {
-                const last = chats[id].metadata?.lastMsg || "Нет сообщений";
-                list.innerHTML += `<div onclick="openChat('${id}')" class="p-3 bg-white/5 rounded-xl border border-white/5 text-[10px] cursor-pointer mb-1">
-                    <b>ID: ${id}</b><br><span class="opacity-50">${last}</span>
-                </div>`;
-            });
-        }
-
-        function openChat(id) {
-            currentChatId = id;
-            document.getElementById('chat-box').classList.remove('hidden');
-            db.ref('chats/'+id+'/messages').off();
-            db.ref('chats/'+id+'/messages').on('value', s => {
-                const msgs = document.getElementById('chat-msgs');
-                msgs.innerHTML = "";
-                Object.values(s.val() || {}).forEach(m => {
-                    const isA = m.role === 'admin';
-                    msgs.innerHTML += `<div class="${isA ? 'ml-auto bg-[#bf953f] text-black' : 'mr-auto bg-white/10 text-white'} p-2 rounded-xl max-w-[85%] font-bold text-[11px] mb-1">${m.text}</div>`;
                 });
-                msgs.scrollTop = msgs.scrollHeight;
-            });
-        }
+            }
+        });
 
-        function sendAdminMsg() {
-            const i = document.getElementById('chat-in');
-            if(!i.value.trim() || !currentChatId) return;
-            db.ref('chats/'+currentChatId+'/messages').push({text: i.value, role: 'admin'});
-            db.ref('chats/'+currentChatId+'/metadata/lastMsg').set("Админ: " + i.value);
-            i.value = "";
-        }
+        // СПИСОК КЛИЕНТОВ
+        db.ref('users').on('value', s => {
+            const list = document.getElementById('users-list');
+            const countDiv = document.getElementById('count-users');
+            list.innerHTML = "";
+            const data = s.val();
+            const count = data ? Object.keys(data).length : 0;
+            countDiv.innerText = "КЛИЕНТОВ: " + count;
 
-        function addNumbers() {
-            const raw = document.getElementById('new-nums').value;
-            const price = document.getElementById('new-price').value;
-            const op = document.getElementById('new-op').value;
-            if(!raw || !price) return;
-            raw.split(/[ , \n]+/).forEach(n => { if(n.trim()) db.ref('inventory').push({num: n.trim(), price, op}); });
-            document.getElementById('new-nums').value = "";
-            showTab('inv');
+            if(!data) list.innerHTML = "<p class='opacity-20 text-xs'>Пользователей нет</p>";
+            else {
+                Object.keys(data).forEach(id => {
+                    const u = data[id];
+                    list.innerHTML += `
+                    <div class="card flex justify-between items-center">
+                        <div>
+                            <div class="text-xs font-bold text-[#bf953f]">${u.phone}</div>
+                            <div class="text-[9px] opacity-40">Пароль: ${u.pass} | Код: ${u.word}</div>
+                        </div>
+                        <button onclick="delItem('users/${id}')" class="bg-red-500/10 text-red-500 p-2 rounded-lg text-[10px]">Удалить</button>
+                    </div>`;
+                });
+            }
+        });
+
+        function delItem(path) {
+            if(confirm("Удалить запись навсегда?")) {
+                db.ref(path).remove();
+            }
         }
     </script>
 </body>
