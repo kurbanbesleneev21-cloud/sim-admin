@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIM MARKET | CONTROL 7.0</title>
+    <title>SIM MARKET ENGINE v8.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -13,211 +13,163 @@
         .gold-text { background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .card { background: #0d0d0d; border: 1px solid rgba(191,149,63,0.1); border-radius: 20px; padding: 18px; }
         .input-dark { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 12px; width: 100%; color: #fff; outline: none; font-size: 14px; }
-        .input-dark:focus { border-color: #bf953f; }
-        .tab-btn { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #555; padding: 12px 5px; border-bottom: 2px solid transparent; flex: 1; text-align: center; }
+        .tab-btn { font-size: 8px; font-weight: 800; text-transform: uppercase; color: #555; flex: 1; text-align: center; padding: 15px 0; border-bottom: 2px solid transparent; }
         .tab-active { color: #bf953f; border-color: #bf953f; background: rgba(191,149,63,0.05); }
-        .btn-gold { background: #bf953f; color: #000; font-weight: 800; border-radius: 14px; padding: 14px; width: 100%; transition: 0.3s; }
-        .btn-gold:active { transform: scale(0.95); }
-        .badge { font-size: 8px; padding: 3px 8px; border-radius: 6px; font-weight: 800; text-transform: uppercase; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .btn-gold { background: #bf953f; color: #000; font-weight: 800; border-radius: 14px; padding: 14px; width: 100%; }
+        .badge-op { font-size: 7px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: #888; }
     </style>
 </head>
 <body>
 
     <div id="auth" class="fixed inset-0 bg-[#050505] z-[200] flex items-center justify-center p-6">
         <div class="w-full max-w-xs text-center">
-            <div class="mb-8">
-                <h1 class="text-3xl font-black gold-text italic">SIM CONTROL</h1>
-                <p class="text-[9px] opacity-30 tracking-[4px] uppercase mt-1 text-white">Elite Administration</p>
-            </div>
+            <h1 class="text-3xl font-black gold-text italic mb-8">SIM CONTROL</h1>
             <input type="password" id="pass" placeholder="ПИН-КОД" class="input-dark text-center mb-4 text-2xl tracking-[10px]">
-            <button onclick="login()" class="btn-gold uppercase shadow-lg shadow-amber-900/20">Доступ разрешен</button>
+            <button onclick="login()" class="btn-gold uppercase shadow-xl shadow-amber-900/10">Войти в систему</button>
         </div>
     </div>
 
     <div id="app" class="hidden">
-        
-        <header class="p-6 flex justify-between items-center border-b border-white/5 bg-[#080808]">
+        <header class="p-6 border-b border-white/5 bg-[#080808] flex justify-between items-end">
             <div>
-                <h2 class="text-sm font-black gold-text italic tracking-tighter">PREMIUM HUB v7.0</h2>
-                <p id="stat-summary" class="text-[9px] opacity-40 uppercase font-bold tracking-widest mt-1">Загрузка данных...</p>
+                <p class="text-[8px] uppercase tracking-[3px] opacity-30 mb-1">Market Statistics</p>
+                <div class="flex gap-4">
+                    <div><p class="text-[9px] opacity-40">ВИЗИТЫ</p><p id="stat-visits" class="text-xl font-black text-emerald-500">0</p></div>
+                    <div><p class="text-[9px] opacity-40">СКЛАД</p><p id="stat-stock" class="text-xl font-black gold-text">0</p></div>
+                    <div><p class="text-[9px] opacity-40">КАССА</p><p id="stat-money" class="text-xl font-black text-white">0</p></div>
+                </div>
             </div>
-            <button onclick="location.reload()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-xs">🔄</button>
+            <button onclick="location.reload()" class="bg-white/5 p-2 rounded-lg text-xs">🔄</button>
         </header>
 
-        <nav class="flex bg-[#080808] sticky top-0 z-50 border-b border-white/5">
+        <nav class="flex sticky top-0 z-50 bg-[#080808]/90 backdrop-blur-md border-b border-white/5">
             <button onclick="showTab('leads')" id="btn-leads" class="tab-btn tab-active">Заявки</button>
             <button onclick="showTab('inventory')" id="btn-inventory" class="tab-btn">Склад</button>
             <button onclick="showTab('add')" id="btn-add" class="tab-btn">Добавить</button>
-            <button onclick="showTab('settings')" id="btn-settings" class="tab-btn">Настройки</button>
+            <button onclick="showTab('site')" id="btn-site" class="tab-btn">Сайт</button>
         </nav>
 
         <main class="p-5">
-            
             <div id="tab-leads" class="space-y-4">
-                <div id="leads-list" class="space-y-4">
-                    <p class="text-center opacity-20 py-10">Ожидание заказов...</p>
-                </div>
+                <div id="leads-list" class="space-y-4 pb-10 text-sm"></div>
             </div>
 
             <div id="tab-inventory" class="hidden space-y-4">
-                <input type="text" id="stock-search" oninput="renderStock()" placeholder="🔍 Поиск по цифрам..." class="input-dark mb-2">
+                <div class="flex gap-2">
+                    <input type="text" id="stock-search" oninput="renderStock()" placeholder="Поиск номера..." class="input-dark flex-1">
+                    <select id="sort-price" onchange="renderStock()" class="input-dark w-1/3 text-[10px]">
+                        <option value="new">Новые</option>
+                        <option value="high">Дорогие</option>
+                        <option value="low">Дешевые</option>
+                    </select>
+                </div>
+                <div id="op-stats" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
                 <div id="stock-list" class="space-y-3 pb-10"></div>
             </div>
 
             <div id="tab-add" class="hidden space-y-4">
-                <div class="card bg-gradient-to-br from-[#111] to-[#0a0a0a]">
-                    <h3 class="text-[10px] font-black mb-4 uppercase opacity-50 tracking-widest text-amber-500">Регистрация номера</h3>
-                    <p class="text-[9px] opacity-30 mb-2 italic">Можно добавить один или несколько через запятую</p>
-                    <input type="text" id="in-num" placeholder="999-000-11-22" class="input-dark mb-3">
-                    <input type="number" id="in-price" placeholder="Цена за ед. (₽)" class="input-dark mb-3">
-                    <select id="in-op" class="input-dark mb-4">
-                        <option value="mts">МТС</option>
-                        <option value="megafon">Мегафон</option>
-                        <option value="beeline">Билайн</option>
-                        <option value="tele2">Tele2</option>
-                        <option value="yota">Yota</option>
-                    </select>
-                    <button onclick="addItem()" class="btn-gold uppercase text-[11px] tracking-widest">Опубликовать</button>
-                </div>
-            </div>
-
-            <div id="tab-settings" class="hidden space-y-4">
                 <div class="card">
-                    <h3 class="text-[10px] font-black mb-4 uppercase opacity-50 tracking-widest">Интеграция Telegram</h3>
-                    <input type="text" placeholder="Bot Token" class="input-dark mb-3 opacity-30">
-                    <input type="text" placeholder="Your Chat ID" class="input-dark mb-4 opacity-30">
-                    <button class="w-full p-3 rounded-xl border border-white/10 text-[10px] font-bold uppercase opacity-30">Сохранить настройки</button>
-                </div>
-                <div class="card border-red-900/20">
-                    <h3 class="text-[10px] font-black mb-4 uppercase text-red-500">Опасная зона</h3>
-                    <button onclick="clearAllData()" class="w-full p-4 rounded-xl bg-red-950/20 text-red-500 border border-red-900/30 text-[10px] font-black uppercase">Удалить все данные</button>
+                    <h3 class="text-[10px] font-black uppercase opacity-40 mb-4">Новое поступление</h3>
+                    <textarea id="in-num" placeholder="Номера через запятую или пробел..." class="input-dark mb-3 h-24 text-xs"></textarea>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <input type="number" id="in-price" placeholder="Цена (₽)" class="input-dark">
+                        <select id="in-op" class="input-dark">
+                            <option value="mts">МТС</option><option value="megafon">Мегафон</option>
+                            <option value="beeline">Билайн</option><option value="tele2">Tele2</option>
+                            <option value="yota">Yota</option>
+                        </select>
+                    </div>
+                    <button onclick="addItem()" class="btn-gold uppercase text-[10px]">Выставить на продажу</button>
                 </div>
             </div>
 
+            <div id="tab-site" class="hidden space-y-4">
+                <div class="card">
+                    <h3 class="text-[10px] font-black uppercase opacity-40 mb-4">Текст на главной (Banner)</h3>
+                    <input type="text" id="site-banner" placeholder="Например: Скидки до 50% только сегодня!" class="input-dark mb-3">
+                    <button onclick="updateBanner()" class="btn-gold uppercase text-[10px]">Обновить баннер</button>
+                </div>
+                <div class="card bg-red-950/10 border-red-900/20">
+                    <h3 class="text-[10px] font-black uppercase text-red-500 mb-4">Безопасность</h3>
+                    <button onclick="clearLeads()" class="w-full p-3 border border-red-900/30 rounded-xl text-[9px] uppercase font-bold text-red-400 mb-2">Очистить список заказов</button>
+                </div>
+            </div>
         </main>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44",
-            authDomain: "nnnmb-a0b52.firebaseapp.com",
-            databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com",
-            projectId: "nnnmb-a0b52"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", authDomain: "nnnmb-a0b52.firebaseapp.com", databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com", projectId: "nnnmb-a0b52" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        let allStock = {}; let allLeads = {};
 
-        let allStock = {};
-        let allLeads = {};
-
-        function login() {
-            if(document.getElementById('pass').value === "7777") {
-                document.getElementById('auth').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                init();
-            } else { alert("Неверный код доступа"); }
-        }
-
-        function showTab(t) {
-            ['leads', 'inventory', 'add', 'settings'].forEach(x => {
-                document.getElementById('tab-'+x).classList.add('hidden');
-                document.getElementById('btn-'+x).classList.remove('tab-active');
-            });
-            document.getElementById('tab-'+t).classList.remove('hidden');
-            document.getElementById('btn-'+t).classList.add('tab-active');
-        }
-
+        function login() { if(document.getElementById('pass').value === "7777") { document.getElementById('auth').classList.add('hidden'); document.getElementById('app').classList.remove('hidden'); init(); } }
+        function showTab(t) { ['leads', 'inventory', 'add', 'site'].forEach(x => { document.getElementById('tab-'+x).classList.add('hidden'); document.getElementById('btn-'+x).classList.remove('tab-active'); }); document.getElementById('tab-'+t).classList.remove('hidden'); document.getElementById('btn-'+t).classList.add('tab-active'); }
+        
         function init() {
-            db.ref('leads').on('value', s => {
-                allLeads = s.val() || {};
-                renderLeads();
-                updateStats();
-            });
-            db.ref('inventory').on('value', s => {
-                allStock = s.val() || {};
-                renderStock();
-                updateStats();
-            });
+            db.ref('leads').on('value', s => { allLeads = s.val() || {}; renderLeads(); updateStats(); });
+            db.ref('inventory').on('value', s => { allStock = s.val() || {}; renderStock(); updateStats(); });
+            db.ref('stats/visits').on('value', s => { document.getElementById('stat-visits').innerText = s.val() || 0; });
+            db.ref('settings/banner').on('value', s => { document.getElementById('site-banner').value = s.val() || ""; });
         }
 
         function updateStats() {
-            const stockCount = Object.keys(allStock).length;
-            const leadsCount = Object.keys(allLeads).length;
-            document.getElementById('stat-summary').innerText = `Склад: ${stockCount} | Заказы: ${leadsCount}`;
+            const stockKeys = Object.keys(allStock);
+            document.getElementById('stat-stock').innerText = stockKeys.length;
+            let sum = 0; stockKeys.forEach(k => sum += parseInt(allStock[k].price));
+            document.getElementById('stat-money').innerText = sum.toLocaleString() + ' ₽';
+            
+            // Статистика по операторам
+            const ops = {mts:0, megafon:0, beeline:0, tele2:0, yota:0};
+            stockKeys.forEach(k => { if(ops[allStock[k].op] !== undefined) ops[allStock[k].op]++; });
+            let opHTML = '';
+            for(let o in ops) { opHTML += `<div class="badge-op">${o.toUpperCase()}: ${ops[o]}</div>`; }
+            document.getElementById('op-stats').innerHTML = opHTML;
         }
 
         function renderLeads() {
-            const list = document.getElementById('leads-list');
-            const keys = Object.keys(allLeads).reverse();
-            list.innerHTML = keys.length ? "" : '<p class="text-center opacity-20 py-20">Новых заявок пока нет</p>';
+            const list = document.getElementById('leads-list'); const keys = Object.keys(allLeads).reverse();
+            list.innerHTML = keys.length ? "" : '<p class="text-center opacity-20 py-20 text-xs uppercase tracking-widest">Нет заказов</p>';
             keys.forEach(k => {
                 const item = allLeads[k];
-                list.innerHTML += `
-                    <div class="card border-l-4 border-amber-500 bg-gradient-to-r from-amber-500/5 to-transparent">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-xl font-black tracking-tighter">+7 ${item.num}</h4>
-                            <button onclick="deleteItem('leads/${k}')" class="text-[10px] text-white/20 uppercase">Удалить</button>
-                        </div>
-                        <div class="text-xs font-bold mb-4 opacity-60">${item.fio} <span class="mx-2">|</span> ${item.contact}</div>
-                        <div class="flex gap-2">
-                            <a href="tel:${item.contact}" class="flex-1 text-center bg-white/5 p-3 rounded-xl text-[10px] font-black uppercase">Позвонить</a>
-                            <a href="https://wa.me/${item.contact.replace(/\D/g,'')}" class="flex-1 text-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 p-3 rounded-xl text-[10px] font-black uppercase">WhatsApp</a>
-                        </div>
-                    </div>`;
+                list.innerHTML += `<div class="card border-l-4 border-amber-500"><div class="flex justify-between items-start mb-2"><h4 class="text-xl font-black">+7 ${item.num}</h4><button onclick="deleteItem('leads/${k}')" class="text-[9px] opacity-20">УДАЛИТЬ</button></div><div class="text-xs font-bold mb-4 text-white/50">${item.fio} <span class="mx-1">•</span> ${item.contact}</div><div class="flex gap-2"><a href="tel:${item.contact}" class="flex-1 text-center bg-white/5 p-3 rounded-xl text-[9px] font-black uppercase">Позвонить</a><a href="https://wa.me/${item.contact.replace(/\D/g,'')}" class="flex-1 text-center bg-emerald-500/10 text-emerald-500 border border-emerald-500/10 p-3 rounded-xl text-[9px] font-black uppercase">WhatsApp</a></div></div>`;
             });
         }
 
         function renderStock() {
-            const list = document.getElementById('stock-list');
-            const search = document.getElementById('stock-search').value.toLowerCase();
-            const keys = Object.keys(allStock).reverse();
-            list.innerHTML = "";
+            const list = document.getElementById('stock-list'); const search = document.getElementById('stock-search').value.toLowerCase();
+            const sort = document.getElementById('sort-price').value;
+            let keys = Object.keys(allStock);
             
+            if(sort === 'high') keys.sort((a,b) => allStock[b].price - allStock[a].price);
+            else if(sort === 'low') keys.sort((a,b) => allStock[a].price - allStock[b].price);
+            else keys.reverse();
+
+            list.innerHTML = "";
             keys.forEach(k => {
                 const item = allStock[k];
                 if(item.num.includes(search)) {
-                    list.innerHTML += `
-                        <div class="card flex justify-between items-center bg-[#080808]">
-                            <div>
-                                <p class="text-sm font-black italic">+7 ${item.num}</p>
-                                <p class="text-[9px] font-bold opacity-30 uppercase tracking-widest">${item.op} • ${item.price} ₽</p>
-                            </div>
-                            <div class="flex gap-3">
-                                <button onclick="deleteItem('inventory/${k}')" class="text-[10px] text-red-500/50 font-black">Удалить</button>
-                            </div>
-                        </div>`;
+                    list.innerHTML += `<div class="card flex justify-between items-center bg-[#080808] py-3"><div onclick="navigator.clipboard.writeText('${item.num}'); alert('Скопировано')">
+                    <p class="text-sm font-black italic">+7 ${item.num}</p><p class="text-[9px] opacity-30 uppercase">${item.op} • ${parseInt(item.price).toLocaleString()} ₽</p></div><button onclick="deleteItem('inventory/${k}')" class="text-red-950 text-[9px] font-black uppercase">Удалить</button></div>`;
                 }
             });
         }
 
         function addItem() {
-            const numInput = document.getElementById('in-num').value;
-            const price = document.getElementById('in-price').value;
-            const op = document.getElementById('in-op').value;
-            
-            if(!numInput || !price) return alert("Заполни данные!");
+            const n = document.getElementById('in-num').value; const p = document.getElementById('in-price').value; const o = document.getElementById('in-op').value;
+            if(!n || !p) return;
+            const nums = n.split(/[ , \n]+/).filter(x => x.trim());
+            nums.forEach(num => db.ref('inventory').push({ num: num.trim(), price: p, op: o }));
+            document.getElementById('in-num').value = ""; alert("Опубликовано: " + nums.length);
+        }
 
-            // Поддержка массового добавления через запятую
-            const nums = numInput.split(',').map(n => n.trim());
-            
-            nums.forEach(n => {
-                if(n) db.ref('inventory').push({ num: n, price, op, status: 'sale' });
-            });
-
-            document.getElementById('in-num').value = "";
-            alert("Готово! Номера на витрине.");
-            showTab('inventory');
+        function updateBanner() {
+            const txt = document.getElementById('site-banner').value;
+            db.ref('settings/banner').set(txt).then(() => alert("Баннер обновлен!"));
         }
 
         function deleteItem(path) { if(confirm("Удалить?")) db.ref(path).remove(); }
-        
-        function clearAllData() {
-            if(confirm("ВНИМАНИЕ! Это удалит ВООБЩЕ ВСЁ. Ты уверен?")) {
-                db.ref('/').remove();
-                location.reload();
-            }
-        }
+        function clearLeads() { if(confirm("Очистить все заказы?")) db.ref('leads').remove(); }
     </script>
 </body>
 </html>
