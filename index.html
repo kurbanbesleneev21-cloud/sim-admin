@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIM ADMIN v11.0 | FINAL FIX</title>
+    <title>SIM ADMIN | NOTIFIER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -15,10 +15,7 @@
         .input-dark { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 12px; width: 100%; color: #fff; outline: none; font-size: 13px; }
         .tab-btn { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #444; flex: 1; text-align: center; padding: 15px 0; border-bottom: 2px solid transparent; }
         .tab-active { color: #bf953f; border-color: #bf953f; background: rgba(191,149,63,0.05); }
-        .btn-gold { background: #bf953f; color: #000; font-weight: 800; border-radius: 12px; padding: 12px; width: 100%; text-transform: uppercase; border: none; cursor: pointer; }
-        .lead-card { border-left: 4px solid #bf953f; background: rgba(191,149,63,0.05); }
-        #chat-msgs::-webkit-scrollbar { width: 4px; }
-        #chat-msgs::-webkit-scrollbar-thumb { background: #bf953f; border-radius: 10px; }
+        .btn-gold { background: #bf953f; color: #000; font-weight: 800; border-radius: 12px; padding: 12px; width: 100%; text-transform: uppercase; border: none; }
     </style>
 </head>
 <body>
@@ -34,7 +31,7 @@
     <div id="app" class="hidden">
         <header class="p-6 bg-[#080808] border-b border-white/5 flex justify-between items-center">
             <div>
-                <p class="text-[8px] opacity-30 uppercase tracking-widest mb-1">Live Dashboard</p>
+                <p class="text-[8px] opacity-30 uppercase tracking-widest mb-1">Admin Panel</p>
                 <div class="flex gap-4">
                     <div class="text-emerald-500 font-black text-lg" id="stat-v">0 <span class="text-[9px] opacity-50">Визиты</span></div>
                     <div class="text-white font-black text-lg" id="stat-l">0 <span class="text-[9px] opacity-50">Заявки</span></div>
@@ -51,33 +48,28 @@
         </nav>
 
         <main class="p-4 space-y-4">
+            <div id="tab-leads" class="space-y-3"><div id="list-leads"></div></div>
             
-            <div id="tab-leads" class="space-y-3">
-                <div id="list-leads" class="space-y-3"></div>
-            </div>
-
             <div id="tab-inv" class="hidden space-y-3">
                 <input type="text" id="search" oninput="renderInv()" placeholder="Поиск номера..." class="input-dark">
-                <div id="list-inv" class="space-y-2"></div>
+                <div id="list-inv"></div>
             </div>
 
             <div id="tab-add" class="hidden card">
-                <h3 id="form-title" class="text-[10px] font-black uppercase opacity-40 mb-3 text-center">Добавить номер</h3>
-                <textarea id="new-nums" placeholder="Номера..." class="input-dark h-24 mb-3"></textarea>
+                <textarea id="new-nums" placeholder="Номера через пробел..." class="input-dark h-24 mb-3"></textarea>
                 <input type="number" id="new-price" placeholder="Цена (₽)" class="input-dark mb-3">
                 <select id="new-op" class="input-dark mb-4">
                     <option value="mts">МТС</option><option value="megafon">Мегафон</option><option value="beeline">Билайн</option><option value="tele2">Tele2</option>
                 </select>
-                <button id="save-btn" onclick="addNumbers()" class="btn-gold">Добавить</button>
-                <button id="cancel-edit" onclick="resetForm()" class="hidden w-full mt-4 text-[10px] opacity-30 font-bold uppercase">Отмена</button>
+                <button onclick="addNumbers()" class="btn-gold">Добавить на склад</button>
             </div>
 
             <div id="tab-chat" class="hidden space-y-3">
-                <div id="chat-list" class="space-y-2 max-h-[150px] overflow-y-auto"></div>
+                <div id="chat-list" class="space-y-2"></div>
                 <div id="chat-box" class="card h-[400px] flex flex-col hidden border-[#bf953f]/30">
                     <div id="chat-msgs" class="flex-1 overflow-y-auto space-y-2 text-xs mb-3 flex flex-col p-2"></div>
                     <div class="flex gap-2 p-1">
-                        <input type="text" id="chat-in" class="input-dark flex-1" placeholder="Ваш ответ...">
+                        <input type="text" id="chat-in" class="input-dark flex-1" placeholder="Ответ...">
                         <button onclick="sendAdminMsg()" class="btn-gold !w-14">></button>
                     </div>
                 </div>
@@ -86,6 +78,10 @@
     </div>
 
     <script>
+        // ТВОИ ДАННЫЕ TELEGRAM
+        const TG_TOKEN = "8569235049:AAEsaW4ME-Ql6036i04tIbj--IPNT6JdroE"; 
+        const TG_ID = "8768514374";
+
         const cfg = { 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             authDomain: "nnnmb-a0b52.firebaseapp.com", 
@@ -97,7 +93,12 @@
 
         let allStock = {};
         let currentChatId = '';
-        let editKey = null;
+        let initialLoad = true; // Чтобы не слать старые заявки при открытии
+
+        function sendTG(text) {
+            const msg = encodeURIComponent(text);
+            fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_ID}&text=${msg}&parse_mode=HTML`);
+        }
 
         function login() {
             if(document.getElementById('pass').value === '7777') {
@@ -117,27 +118,48 @@
         }
 
         function init() {
-            // Лиды
-            db.ref('leads').on('value', s => {
-                const list = document.getElementById('list-leads');
-                list.innerHTML = "";
-                const leads = s.val() || {};
-                document.getElementById('stat-l').innerText = Object.keys(leads).length;
-                Object.keys(leads).reverse().forEach(id => {
-                    const l = leads[id];
-                    list.innerHTML += `<div class="card lead-card mb-2">
-                        <div class="flex justify-between"><b>+7 ${l.num}</b><button onclick="db.ref('leads/${id}').remove()" class="text-red-500 text-[10px]">X</button></div>
-                        <p class="text-sm">${l.fio}</p><p class="text-xs text-emerald-400">${l.contact}</p>
-                    </div>`;
-                });
+            // Слушаем новые ЗАЯВКИ
+            db.ref('leads').on('child_added', s => {
+                const l = s.val();
+                if(!initialLoad) {
+                    sendTG(`🚀 <b>НОВАЯ ЗАЯВКА!</b>\n📱 Номер: +7 ${l.num}\n👤 Клиент: ${l.fio}\n📞 Контакт: ${l.contact}`);
+                }
+                renderLeads();
             });
 
-            // Склад
+            // Слушаем новые СООБЩЕНИЯ В ЧАТАХ
+            db.ref('chats').on('child_changed', s => {
+                const data = s.val();
+                const chatId = s.key;
+                const lastMsg = data.metadata?.lastMsg || "";
+                // Уведомляем, если последнее сообщение НЕ от админа
+                if(!lastMsg.startsWith("Админ:")) {
+                    sendTG(`💬 <b>НОВОЕ СООБЩЕНИЕ</b>\n🆔 ID: ${chatId}\n✉️ Текст: ${lastMsg}`);
+                }
+            });
+
+            // Обычные функции отрисовки
+            db.ref('leads').on('value', s => { renderLeads(s.val()); });
             db.ref('inventory').on('value', s => { allStock = s.val() || {}; renderInv(); });
-            // Визиты
-            db.ref('stats/visits').on('value', s => { document.getElementById('stat-v').innerText = s.val() || 0; });
-            // Чаты
             db.ref('chats').on('value', s => { renderChatList(s.val() || {}); });
+            db.ref('stats/visits').on('value', s => { document.getElementById('stat-v').innerText = s.val() || 0; });
+            
+            // После первой загрузки включаем уведомления
+            setTimeout(() => { initialLoad = false; }, 2000);
+        }
+
+        function renderLeads(leads) {
+            const list = document.getElementById('list-leads');
+            list.innerHTML = "";
+            const data = leads || {};
+            document.getElementById('stat-l').innerText = Object.keys(data).length;
+            Object.keys(data).reverse().forEach(id => {
+                const l = data[id];
+                list.innerHTML += `<div class="card mb-2 border-l-4 border-yellow-600">
+                    <div class="flex justify-between"><b>+7 ${l.num}</b><button onclick="db.ref('leads/${id}').remove()" class="text-red-500 text-[10px]">УДАЛИТЬ</button></div>
+                    <p class="text-sm opacity-80">${l.fio}</p><p class="text-xs text-emerald-400">${l.contact}</p>
+                </div>`;
+            });
         }
 
         function renderInv() {
@@ -149,19 +171,15 @@
                 if(i.num.includes(q)) {
                     list.innerHTML += `<div class="card flex justify-between items-center mb-2">
                         <span>+7 ${i.num} <small class="gold-text">${i.price}₽</small></span>
-                        <div class="flex gap-2">
-                            <button onclick="startEdit('${k}')" class="text-blue-400 text-[10px]">РЕД.</button>
-                            <button onclick="db.ref('inventory/${k}').remove()" class="text-red-900 text-[10px]">УДАЛИТЬ</button>
-                        </div>
+                        <button onclick="db.ref('inventory/${k}').remove()" class="text-red-900 text-[10px]">УДАЛИТЬ</button>
                     </div>`;
                 }
             });
         }
 
-        // ЧАТ ЛОГИКА
         function renderChatList(chats) {
             const list = document.getElementById('chat-list');
-            list.innerHTML = "<h3 class='text-[10px] font-bold opacity-30 uppercase mb-2'>Диалоги:</h3>";
+            list.innerHTML = "";
             Object.keys(chats).forEach(id => {
                 const last = chats[id].metadata?.lastMsg || "Нет сообщений";
                 list.innerHTML += `<div onclick="openChat('${id}')" class="p-3 bg-white/5 rounded-xl border border-white/5 text-[10px] cursor-pointer mb-1">
@@ -179,7 +197,7 @@
                 msgs.innerHTML = "";
                 Object.values(s.val() || {}).forEach(m => {
                     const isA = m.role === 'admin';
-                    msgs.innerHTML += `<div class="${isA ? 'ml-auto bg-[#bf953f] text-black' : 'mr-auto bg-white/10 text-white'} p-2 rounded-xl max-w-[85%] font-bold text-[11px] mb-1 shadow-lg">${m.text}</div>`;
+                    msgs.innerHTML += `<div class="${isA ? 'ml-auto bg-[#bf953f] text-black' : 'mr-auto bg-white/10 text-white'} p-2 rounded-xl max-w-[85%] font-bold text-[11px] mb-1">${m.text}</div>`;
                 });
                 msgs.scrollTop = msgs.scrollHeight;
             });
@@ -191,41 +209,6 @@
             db.ref('chats/'+currentChatId+'/messages').push({text: i.value, role: 'admin'});
             db.ref('chats/'+currentChatId+'/metadata/lastMsg').set("Админ: " + i.value);
             i.value = "";
-        }
-
-        // РЕДАКТИРОВАНИЕ
-        function startEdit(key) {
-            editKey = key;
-            const item = allStock[key];
-            document.getElementById('new-nums').value = item.num;
-            document.getElementById('new-price').value = item.price;
-            document.getElementById('new-op').value = item.op;
-            document.getElementById('form-title').innerText = "Редактирование";
-            document.getElementById('save-btn').innerText = "Обновить";
-            document.getElementById('save-btn').onclick = saveEdit;
-            document.getElementById('cancel-edit').classList.remove('hidden');
-            showTab('add');
-        }
-
-        function saveEdit() {
-            const num = document.getElementById('new-nums').value.trim();
-            const price = document.getElementById('new-price').value;
-            const op = document.getElementById('new-op').value;
-            if(!num || !price || !editKey) return;
-            db.ref('inventory/' + editKey).update({ num, price, op }).then(() => {
-                resetForm();
-                showTab('inv');
-            });
-        }
-
-        function resetForm() {
-            editKey = null;
-            document.getElementById('new-nums').value = "";
-            document.getElementById('new-price').value = "";
-            document.getElementById('form-title').innerText = "Добавить номер";
-            document.getElementById('save-btn').innerText = "Добавить";
-            document.getElementById('save-btn').onclick = addNumbers;
-            document.getElementById('cancel-edit').classList.add('hidden');
         }
 
         function addNumbers() {
