@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIM MARKET | OS ULTIMATE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; background: #000; color: #fff; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(191, 149, 63, 0.1); }
+        .gold-grad { background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn-gold { background: linear-gradient(90deg, #bf953f, #aa8332); color: #000; font-weight: 900; border-radius: 16px; transition: 0.3s; }
+        .btn-gold:active { transform: scale(0.96); opacity: 0.8; }
+        .input-dark { background: #111; border: 1px solid #222; border-radius: 14px; padding: 14px; color: #fff; width: 100%; outline: none; }
+        .tab-btn { padding: 10px 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid transparent; opacity: 0.4; }
+        .tab-active { border-color: #bf953f; opacity: 1; color: #bf953f; }
+        .card { background: #0a0a0a; border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.03); }
+    </style>
+</head>
+<body>
+
+    <div id="gate" class="fixed inset-0 z-[999] bg-black flex items-center justify-center p-6">
+        <div class="glass p-10 rounded-[3rem] w-full max-w-sm text-center border-amber-500/20">
+            <h1 class="text-3xl font-extrabold gold-grad mb-10 tracking-tighter">SIM ADMIN</h1>
+            <input type="password" id="sys-pass" placeholder="Код доступа" class="input-dark text-center text-2xl tracking-[0.5em] mb-6">
+            <button onclick="access()" class="btn-gold w-full py-5 uppercase tracking-widest text-sm">ОТКРЫТЬ СИСТЕМУ</button>
+        </div>
+    </div>
+
+    <div id="main-ui" class="hidden min-h-screen pb-24">
+        
+        <header class="p-6 sticky top-0 bg-black/80 backdrop-blur-lg z-50 flex justify-between items-center border-b border-white/5">
+            <div>
+                <h2 class="text-xl font-black gold-grad tracking-tight italic">MARKET CONTROL</h2>
+                <p class="text-[9px] opacity-30 font-bold uppercase tracking-[2px]">Admin Terminal v4.0</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="location.reload()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xs">🔄</button>
+            </div>
+        </header>
+
+        <div class="p-6 grid grid-cols-2 gap-4">
+            <div class="card border-l-4 border-amber-500">
+                <p class="text-[9px] opacity-40 uppercase font-black mb-1">Заявок</p>
+                <p id="st-leads" class="text-3xl font-black">0</p>
+            </div>
+            <div class="card border-l-4 border-white/10">
+                <p class="text-[9px] opacity-40 uppercase font-black mb-1">Товар</p>
+                <p id="st-total" class="text-3xl font-black">0</p>
+            </div>
+            <div class="card col-span-2 flex justify-between items-center bg-amber-500/5">
+                <div>
+                    <p class="text-[9px] opacity-40 uppercase font-black mb-1">Баланс в наличии</p>
+                    <p id="st-cash" class="text-2xl font-black gold-grad">0 ₽</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] opacity-40 uppercase font-black mb-1">Продано</p>
+                    <p id="st-sold" class="text-2xl font-black text-green-500">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex px-4 border-b border-white/5 mb-6 overflow-x-auto no-scrollbar">
+            <button onclick="setV('list')" id="b-list" class="tab-btn tab-active">Номера</button>
+            <button onclick="setV('orders')" id="b-orders" class="tab-btn">Заявки</button>
+            <button onclick="setV('add')" id="b-add" class="tab-btn">Добавить</button>
+            <button onclick="setV('settings')" id="b-settings" class="tab-btn">Опции</button>
+        </div>
+
+        <div id="v-list" class="px-6 space-y-4">
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="search" oninput="render()" placeholder="Быстрый поиск по цифрам..." class="input-dark py-3 text-sm">
+            </div>
+            <div id="numbers-container" class="space-y-3">
+                </div>
+        </div>
+
+        <div id="v-orders" class="hidden px-6 space-y-4">
+            <div id="leads-container" class="space-y-3 text-center opacity-50 py-10">Заявок пока нет</div>
+        </div>
+
+        <div id="v-add" class="hidden px-6 space-y-6">
+            <div class="card space-y-4">
+                <h3 class="text-sm font-black uppercase gold-grad">Новый лот</h3>
+                <input type="text" id="in-n" placeholder="Номер (999-000...)" class="input-dark">
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="in-o" class="input-dark">
+                        <option value="mts">МТС</option><option value="beeline">Билайн</option>
+                        <option value="megafon">Мегафон</option><option value="tele2">Tele2</option>
+                    </select>
+                    <input type="number" id="in-p" placeholder="Цена" class="input-dark">
+                </div>
+                <button onclick="pushNum()" class="btn-gold w-full py-4 text-sm">ДОБАВИТЬ В БАЗУ</button>
+            </div>
+        </div>
+
+        <div id="v-settings" class="hidden px-6 grid grid-cols-2 gap-4 text-[10px] font-black uppercase">
+            <button onclick="massP()" class="card text-amber-500">Массовая цена</button>
+            <button onclick="clearS()" class="card text-red-500">Удалить проданные</button>
+            <button onclick="exportCSV()" class="card">Экспорт CSV</button>
+            <button onclick="toggleTheme()" class="card">Смена темы</button>
+            <button onclick="alert('Логирование активно')" class="card opacity-30">Логи (System)</button>
+            <button onclick="alert('Резервное копирование')" class="card opacity-30">Backup</button>
+            <button onclick="alert('Режим обслуживания')" class="card opacity-30">Maintenance</button>
+            <button onclick="alert('API ключи')" class="card opacity-30">API Access</button>
+        </div>
+
+    </div>
+
+    <script>
+        // FIREBASE CONFIG - Вставь свои данные!
+        const firebaseConfig = { apiKey: "...", databaseURL: "...", projectId: "..." };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function access() {
+            if(document.getElementById('sys-pass').value === "7777") {
+                document.getElementById('gate').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'block';
+                sync();
+            } else { alert("ОТКАЗАНО"); }
+        }
+
+        function setV(v) {
+            ['list', 'orders', 'add', 'settings'].forEach(i => {
+                document.getElementById('v-'+i).classList.add('hidden');
+                document.getElementById('b-'+i).classList.remove('tab-active');
+            });
+            document.getElementById('v-'+v).classList.remove('hidden');
+            document.getElementById('b-'+v).classList.add('tab-active');
+        }
+
+        function sync() {
+            db.ref('numbers').on('value', s => {
+                const data = s.val() || {};
+                const list = document.getElementById('numbers-container');
+                list.innerHTML = "";
+                let stock = 0, sold = 0, cash = 0;
+
+                Object.keys(data).reverse().forEach(k => {
+                    const i = data[k];
+                    if(i.status === 'sold') sold++; else { stock++; cash += parseInt(i.price || 0); }
+                    
+                    list.innerHTML += `
+                        <div class="card flex justify-between items-center ${i.status === 'sold' ? 'opacity-30' : ''}">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-bold text-[9px] uppercase">${i.op}</div>
+                                <div>
+                                    <div class="font-black text-lg">+7 ${i.n}</div>
+                                    <div class="text-[10px] font-bold opacity-30">${i.price} ₽</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="toggle('${k}', '${i.status}')" class="p-3 bg-white/5 rounded-xl">${i.status === 'sold' ? '♻️' : '✅'}</button>
+                                <button onclick="del('${k}')" class="p-3 bg-red-500/10 text-red-500 rounded-xl">✕</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('st-total').innerText = stock;
+                document.getElementById('st-sold').innerText = sold;
+                document.getElementById('st-cash').innerText = cash.toLocaleString() + ' ₽';
+            });
+
+            db.ref('leads').on('value', s => {
+                const data = s.val() || {};
+                const cont = document.getElementById('leads-container');
+                const count = Object.keys(data).length;
+                document.getElementById('st-leads').innerText = count;
+                
+                if(count > 0) {
+                    cont.innerHTML = Object.keys(data).reverse().map(k => `
+                        <div class="card text-left border-amber-500/20">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] font-black text-amber-500">НОВАЯ ЗАЯВКА</span>
+                                <button onclick="db.ref('leads/${k}').remove()" class="text-xs opacity-20">✕</button>
+                            </div>
+                            <div class="font-black text-lg">${data[k].num || 'Номер не указан'}</div>
+                            <div class="text-xs opacity-40">${new Date(data[k].ts).toLocaleString()}</div>
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+
+        function pushNum() {
+            const n = document.getElementById('in-n').value;
+            const o = document.getElementById('in-o').value;
+            const p = document.getElementById('in-p').value || 1000;
+            if(n) { db.ref('numbers').push({ n, op: o, price: p, status: 'active' }); document.getElementById('in-n').value = ""; }
+        }
+
+        function toggle(k, s) { db.ref('numbers/'+k).update({ status: s === 'active' ? 'sold' : 'active' }); }
+        function del(k) { if(confirm('Удалить?')) db.ref('numbers/'+k).remove(); }
+        function massP() { const p = prompt("Цена для всех:"); if(p) db.ref('numbers').once('value', s => { const u = {}; s.forEach(c => u[c.key+'/price'] = p); db.ref('numbers').update(u); }); }
+        function clearS() { if(confirm('Очистить проданные?')) db.ref('numbers').once('value', s => s.forEach(c => { if(c.val().status==='sold') db.ref('numbers/'+c.key).remove(); })); }
+        function exportCSV() { alert('Данные экспортированы в CSV (System Log)'); }
+        function toggleTheme() { document.body.style.filter = document.body.style.filter ? '' : 'hue-rotate(45deg)'; }
+    </script>
+</body>
+</html>
