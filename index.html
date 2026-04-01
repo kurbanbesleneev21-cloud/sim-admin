@@ -1,212 +1,168 @@
-<!DOCTYPE html>
+                <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIM CORE | GLOBAL ADMIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIM CORE MOBILE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #050505; color: #fff; overflow: hidden; }
-        .sidebar-link { transition: 0.2s; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; color: #94a3b8; cursor: pointer; font-size: 13px; }
-        .sidebar-link:hover, .sidebar-link.active { background: #bf953f; color: #000; font-weight: 700; }
-        .glass { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; }
-        .tab-content { display: none; height: 100%; overflow-y: auto; padding-bottom: 100px; padding-right: 10px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        :root { --gold: #bf953f; --dark: #0a0a0a; }
+        body { font-family: 'Inter', sans-serif; background: var(--dark); color: #fff; -webkit-tap-highlight-color: transparent; }
+        
+        /* Мобильное меню */
+        .mobile-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px; z-index: 100; backdrop-filter: blur(10px); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #555; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .nav-item.active { color: var(--gold); }
+        
+        /* Карточки и контент */
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; }
+        .tab-content { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
-        input, select, textarea { background: #0f0f0f!important; border: 1px solid #1f1f1f!important; color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; outline: none; }
-        .badge { padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #bf953f; border-radius: 10px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        input, textarea, select { background: #151515!important; border: 1px solid #222!important; color: #fff!important; padding: 14px; border-radius: 12px; font-size: 16px; width: 100%; }
+        .btn-gold { background: var(--gold); color: #000; font-weight: 900; padding: 16px; border-radius: 14px; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-<div class="flex h-screen">
-    <aside class="w-64 border-r border-white/5 p-6 flex flex-col gap-4 bg-[#080808]">
-        <div class="mb-4"><h1 class="text-xl font-black text-[#bf953f]">SIM<span class="text-white">CORE</span></h1></div>
-        <nav class="space-y-1 overflow-y-auto pr-2">
-            <div class="sidebar-link active" onclick="showTab('dash', this)"><i data-lucide="layout-dashboard"></i> Dashboard</div>
-            <div class="sidebar-link" onclick="showTab('users', this)"><i data-lucide="users"></i> Пользователи</div>
-            <div class="sidebar-link" onclick="showTab('leads', this)"><i data-lucide="inbox"></i> Leads <span id="l-notif" class="hidden w-2 h-2 bg-red-500 rounded-full"></span></div>
-            <div class="sidebar-link" onclick="showTab('pages', this)"><i data-lucide="file-text"></i> Страницы & SEO</div>
-            <div class="sidebar-link" onclick="showTab('blog', this)"><i data-lucide="pen-tool"></i> Блог</div>
-            <div class="sidebar-link" onclick="showTab('media', this)"><i data-lucide="image"></i> Медиа / Файлы</div>
-            <div class="sidebar-link" onclick="showTab('security', this)"><i data-lucide="shield-check"></i> Безопасность</div>
-            <div class="sidebar-link" onclick="showTab('ai', this)"><i data-lucide="sparkles"></i> AI PRO</div>
-            <div class="sidebar-link" onclick="showTab('settings', this)"><i data-lucide="settings"></i> Настройки</div>
-        </nav>
-    </aside>
+    <header class="p-5 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#0a0a0a] z-50">
+        <h1 class="text-xl font-black italic text-white">SIM<span class="text-[#bf953f]">CORE</span></h1>
+        <div class="flex gap-3">
+            <span id="lead-indicator" class="w-2 h-2 bg-red-500 rounded-full animate-pulse hidden"></span>
+            <i data-lucide="bell" class="w-5 text-gray-500"></i>
+        </div>
+    </header>
 
-    <main class="flex-1 p-10 relative">
+    <section id="dash" class="tab-content active">
+        <h2 class="text-2xl font-black mb-6 uppercase">Статистика</h2>
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="card"><p class="text-[10px] opacity-40 uppercase font-bold">Юзеры</p><h3 id="u-count" class="text-2xl font-black text-[#bf953f]">0</h3></div>
+            <div class="card"><p class="text-[10px] opacity-40 uppercase font-bold">Заявки</p><h3 id="l-count" class="text-2xl font-black">0</h3></div>
+        </div>
         
-        <section id="dash" class="tab-content active">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter">System Overview</h2>
-            <div class="grid grid-cols-4 gap-6 mb-8">
-                <div class="glass p-6 border-l-2 border-green-500">
-                    <p class="text-[10px] uppercase opacity-40 font-bold">👤 Users</p>
-                    <h3 id="stat-u" class="text-4xl font-black mt-2">0</h3>
-                </div>
-                <div class="glass p-6">
-                    <p class="text-[10px] uppercase opacity-40 font-bold">👁 Visitors Today</p>
-                    <h3 class="text-4xl font-black mt-2">45</h3>
-                </div>
-                <div class="glass p-6">
-                    <p class="text-[10px] uppercase opacity-40 font-bold">📄 Pages</p>
-                    <h3 class="text-4xl font-black mt-2">12</h3>
-                </div>
-                <div class="glass p-6 border-l-2 border-[#bf953f]">
-                    <p class="text-[10px] uppercase opacity-40 font-bold">📩 New Leads</p>
-                    <h3 id="stat-l" class="text-4xl font-black mt-2 text-[#bf953f]">0</h3>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-6">
-                <div class="glass p-6"><h4 class="text-xs font-bold mb-4 opacity-50 uppercase tracking-widest">Recent Logs</h4><div id="mini-logs" class="space-y-3 text-[11px]"></div></div>
-                <div class="glass p-6">
-                    <h4 class="text-xs font-bold mb-4 opacity-50 uppercase tracking-widest">Quick Actions</h4>
-                    <div class="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase">
-                        <button class="bg-white/5 p-4 rounded-xl hover:bg-[#bf953f] hover:text-black transition">New Post</button>
-                        <button class="bg-white/5 p-4 rounded-xl hover:bg-[#bf953f] hover:text-black transition">Upload Image</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <div class="card space-y-4">
+            <h4 class="text-xs font-bold uppercase opacity-50">Быстрый доступ</h4>
+            <button class="w-full text-left p-4 bg-white/5 rounded-xl flex items-center gap-3" onclick="document.querySelector('[onclick*=\'users\']').click()">
+                <i data-lucide="users" class="w-5 text-[#bf953f]"></i> Управление юзерами
+            </button>
+            <button class="w-full text-left p-4 bg-white/5 rounded-xl flex items-center gap-3" onclick="document.querySelector('[onclick*=\'pages\']').click()">
+                <i data-lucide="edit-3" class="w-5 text-[#bf953f]"></i> Изменить цены/текст
+            </button>
+        </div>
+    </section>
 
-        <section id="users" class="tab-content">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter">User Management</h2>
-            <div class="glass overflow-hidden text-sm">
-                <table class="w-full text-left">
-                    <thead class="bg-white/5 uppercase text-[10px] opacity-40"><tr><th class="p-4">User</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4 text-right">Actions</th></tr></thead>
-                    <tbody id="user-rows" class="divide-y divide-white/5"></tbody>
-                </table>
+    <section id="users" class="tab-content">
+        <h2 class="text-2xl font-black mb-6 uppercase">Клиенты</h2>
+        <div id="user-list" class="space-y-3">
             </div>
-        </section>
+    </section>
 
-        <section id="pages" class="tab-content">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter">Pages & Blocks</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="glass p-8 space-y-4">
-                    <h4 class="text-[#bf953f] font-black uppercase text-xs">SEO & Metadata</h4>
-                    <div><label class="text-[10px] opacity-30">PAGE TITLE</label><input type="text" id="p-title" value="SIM MARKET | Купить красивые номера"></div>
-                    <div><label class="text-[10px] opacity-30">META DESCRIPTION</label><textarea id="p-meta" rows="3"></textarea></div>
-                    <button class="bg-[#bf953f] text-black w-full py-3 rounded-xl font-black">SAVE SEO</button>
-                </div>
-                <div class="glass p-8 space-y-4">
-                    <h4 class="text-[#bf953f] font-black uppercase text-xs">Blocks Editor (No-Code)</h4>
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/10"><span>Hero Section</span><button class="text-[10px] font-bold text-[#bf953f]">Edit</button></div>
-                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/10"><span>Features List</span><button class="text-[10px] font-bold text-[#bf953f]">Edit</button></div>
-                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg border border-white/10 opacity-40"><span>FAQ Section</span><button class="text-[10px] font-bold">Enable</button></div>
-                    </div>
-                </div>
+    <section id="pages" class="tab-content">
+        <h2 class="text-2xl font-black mb-6 uppercase">Контент</h2>
+        <div class="card space-y-5">
+            <div>
+                <label class="text-[10px] font-bold opacity-30 uppercase ml-1">Заголовок сайта</label>
+                <input type="text" id="site-title" value="SIM MARKET">
             </div>
-        </section>
-
-        <section id="security" class="tab-content">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter">Security Logs</h2>
-            <div class="glass overflow-hidden text-[11px]">
-                <div class="p-4 bg-white/5 font-black uppercase flex justify-between"><span>Login History</span> <span class="text-red-500">2FA Active</span></div>
-                <div id="security-logs" class="divide-y divide-white/5"></div>
+            <div>
+                <label class="text-[10px] font-bold opacity-30 uppercase ml-1">Описание (SEO)</label>
+                <textarea id="site-desc" rows="3">Красивые номера в Дагестане</textarea>
             </div>
-        </section>
+            <button class="btn-gold" onclick="saveSEO()">Сохранить изменения</button>
+        </div>
+    </section>
 
-        <section id="ai" class="tab-content">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter text-[#bf953f]">AI Content Engine</h2>
-            <div class="glass p-10 max-w-2xl mx-auto text-center space-y-6">
-                <div class="w-16 h-16 bg-[#bf953f]/20 rounded-full flex items-center justify-center mx-auto"><i data-lucide="sparkles" class="text-[#bf953f]"></i></div>
-                <h3 class="text-xl font-bold">Генерация текста OpenAI</h3>
-                <textarea class="h-40" placeholder="Напиши тему: 'Преимущества золотых номеров'..."></textarea>
-                <div class="flex gap-2">
-                    <button class="flex-1 py-4 bg-[#bf953f] text-black font-black rounded-2xl">СГЕНЕРИРОВАТЬ</button>
-                    <button class="flex-1 py-4 bg-white/5 rounded-2xl font-black">ПЕРЕВОД</button>
+    <section id="settings" class="tab-content">
+        <h2 class="text-2xl font-black mb-6 uppercase">Настройки</h2>
+        <div class="card space-y-4">
+            <div class="flex justify-between items-center p-2">
+                <span>Безопасность (2FA)</span>
+                <div class="w-12 h-6 bg-green-500/20 rounded-full flex items-center px-1">
+                    <div class="w-4 h-4 bg-green-500 rounded-full"></div>
                 </div>
             </div>
-        </section>
-
-        <section id="settings" class="tab-content">
-            <h2 class="text-3xl font-black mb-8 italic uppercase tracking-tighter">Global Settings</h2>
-            <div class="glass p-8 space-y-6 max-w-3xl">
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-[10px] opacity-30">LOGO URL</label><input type="text" placeholder="/logo.png"></div>
-                    <div><label class="text-[10px] opacity-30">FAVICON URL</label><input type="text" placeholder="/fav.ico"></div>
-                </div>
-                <div><label class="text-[10px] opacity-30">GOOGLE ANALYTICS ID</label><input type="text" placeholder="G-XXXXXXX"></div>
-                <div><label class="text-[10px] opacity-30">SMS.RU API KEY</label><input type="password"></div>
-                <button class="w-full py-4 bg-white text-black font-black rounded-2xl">SAVE ALL CONFIG</button>
+            <div class="pt-4 border-t border-white/5">
+                <p class="text-[10px] opacity-30 mb-2 uppercase">Ваш IP: 192.168.1.1</p>
+                <button class="w-full py-3 bg-red-500/10 text-red-500 rounded-xl font-bold text-sm">Выйти из системы</button>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
-</div>
+    <nav class="mobile-nav">
+        <div class="nav-item active" onclick="showTab('dash', this)"><i data-lucide="layout-grid"></i><span>Главная</span></div>
+        <div class="nav-item" onclick="showTab('users', this)"><i data-lucide="users"></i><span>Юзеры</span></div>
+        <div class="nav-item" onclick="showTab('pages', this)"><i data-lucide="layers"></i><span>Сайт</span></div>
+        <div class="nav-item" onclick="showTab('settings', this)"><i data-lucide="settings"></i><span>Опции</span></div>
+    </nav>
 
 <script>
-    // Firebase Setup
-    const firebaseConfig = { apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" };
+    // Твои настройки Firebase
+    const firebaseConfig = { 
+        apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
+        databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     function showTab(id, btn) {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         btn.classList.add('active');
         lucide.createIcons();
     }
 
-    // ЛОГИКА ПОЛЬЗОВАТЕЛЕЙ
-    function loadUsers() {
+    // Загрузка пользователей в мобильном стиле
+    function syncData() {
+        // Юзеры
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('user-rows'); list.innerHTML = "";
+            const list = document.getElementById('user-list');
+            list.innerHTML = "";
             let count = 0;
-            snap.forEach(u => {
-                count++; const d = u.val();
+            snap.forEach(child => {
+                count++;
+                const u = child.val();
                 list.innerHTML += `
-                    <tr class="hover:bg-white/[0.02] transition">
-                        <td class="p-4 font-bold text-[#bf953f]">${d.name || 'Incognito'}<br><span class="opacity-30 text-[10px]">+7 ${u.key}</span></td>
-                        <td class="p-4"><span class="badge ${d.role=='admin'?'bg-red-500':'bg-white/10'}">${d.role || 'user'}</span></td>
-                        <td class="p-4"><span class="${d.banned ? 'text-red-500' : 'text-green-500'}">● ${d.banned ? 'Blocked' : 'Active'}</span></td>
-                        <td class="p-4 text-right">
-                            <button onclick="toggleBan('${u.key}', ${d.banned})" class="p-2 opacity-20 hover:opacity-100 hover:text-red-500"><i data-lucide="ban" class="w-4"></i></button>
-                            <button onclick="changeRole('${u.key}')" class="p-2 opacity-20 hover:opacity-100"><i data-lucide="shield-check" class="w-4"></i></button>
-                        </td>
-                    </tr>`;
+                    <div class="card flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-[#bf953f]">${u.name || 'Клиент'}</p>
+                            <p class="text-xs opacity-40">+7 ${child.key}</p>
+                        </div>
+                        <button onclick="manageUser('${child.key}')" class="bg-white/5 p-3 rounded-lg">
+                            <i data-lucide="more-horizontal" class="w-4"></i>
+                        </button>
+                    </div>`;
             });
-            document.getElementById('stat-u').innerText = count;
+            document.getElementById('u-count').innerText = count;
             lucide.createIcons();
         });
-    }
 
-    // ИМИТАЦИЯ ЛОГОВ (БЕЗОПАСНОСТЬ)
-    function loadLogs() {
-        const logs = [
-            { event: "Вход Admin", ip: "192.168.1.10", date: "17:05", dev: "Chrome/Win" },
-            { event: "Регистрация +7928...", ip: "95.153.120.5", date: "16:22", dev: "Safari/iOS" }
-        ];
-        const container = document.getElementById('security-logs');
-        const mini = document.getElementById('mini-logs');
-        logs.forEach(l => {
-            container.innerHTML += `<div class="p-4 flex justify-between"><div><b>${l.event}</b><br>${l.ip}</div><div class="text-right opacity-40">${l.date}<br>${l.dev}</div></div>`;
-            mini.innerHTML += `<div class="flex justify-between opacity-60"><span>${l.event}</span><span>${l.date}</span></div>`;
+        // Заявки
+        db.ref('orders').on('value', snap => {
+            let count = 0;
+            snap.forEach(() => count++);
+            document.getElementById('l-count').innerText = count;
+            if(count > 0) document.getElementById('lead-indicator').classList.remove('hidden');
         });
     }
 
-    function toggleBan(id, status) { db.ref('users/'+id).update({ banned: !status }); }
-    function changeRole(id) { 
-        const role = prompt("admin, editor, user?"); 
-        if(role) db.ref('users/'+id).update({ role }); 
+    function manageUser(phone) {
+        const action = confirm("Заблокировать пользователя " + phone + "?");
+        if(action) db.ref('users/' + phone).update({ banned: true });
+    }
+
+    function saveSEO() {
+        alert("Настройки сохранены!");
     }
 
     window.onload = () => {
-        loadUsers();
-        loadLogs();
-        db.ref('orders').on('value', snap => {
-            let count = 0; snap.forEach(() => count++);
-            document.getElementById('stat-l').innerText = count;
-            if(count > 0) document.getElementById('l-notif').classList.remove('hidden');
-        });
+        syncData();
         lucide.createIcons();
     };
 </script>
