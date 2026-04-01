@@ -2,258 +2,213 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIM CORE | ENTERPRISE ADMIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIM ADMIN PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Manrope:wght@400;600;800&display=swap');
-        body { font-family: 'Manrope', sans-serif; background: #020202; color: #fff; min-height: 100vh; display: flex; overflow: hidden; }
-        .sidebar { width: 280px; background: #080808; border-right: 1px solid #151515; display: flex; flex-direction: column; flex-shrink: 0; }
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; background: radial-gradient(circle at top right, #0a0a0a, #000); }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; background: #000; color: #fff; margin: 0; padding: 0; }
         .gold { color: #bf953f; }
-        .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 24px; padding: 25px; }
-        .nav-link { padding: 14px 24px; margin: 2px 15px; border-radius: 14px; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; display: flex; align-items: center; gap: 12px; transition: 0.2s; text-transform: uppercase; }
-        .nav-link.active { background: #bf953f; color: #000; }
-        .nav-link:hover:not(.active) { background: #151515; color: #fff; }
-        input, select, textarea { background: #111 !important; border: 1px solid #222 !important; color: #fff !important; padding: 12px; border-radius: 12px; outline: none; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; font-size: 10px; text-transform: uppercase; opacity: 0.3; border-bottom: 1px solid #1a1a1a; }
-        td { padding: 15px; border-bottom: 1px solid #0f0f0f; font-size: 13px; }
-        .log-line { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px 0; border-bottom: 1px solid #111; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #bf953f; border-radius: 10px; }
+        .bg-gold { background: #bf953f; }
+        
+        /* Мобильное меню */
+        #mobile-menu { position: fixed; top: 0; left: -100%; width: 80%; height: 100%; background: #0a0a0a; z-index: 1000; transition: 0.4s; border-right: 1px solid #1a1a1a; }
+        #mobile-menu.active { left: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; display: none; }
+        .overlay.active { display: block; }
+
+        .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .nav-item { padding: 15px 25px; font-size: 14px; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid #111; cursor: pointer; }
+        .nav-item.active { color: #bf953f; background: #151515; }
+        
+        input, select, textarea { background: #151515 !important; border: 1px solid #222 !important; color: #fff !important; padding: 12px; border-radius: 12px; width: 100%; font-size: 14px; }
+        table { width: 100%; font-size: 12px; }
+        td, th { padding: 12px 8px; border-bottom: 1px solid #111; text-align: left; }
+        .btn-action { background: #bf953f; color: #000; font-weight: 800; padding: 10px; border-radius: 10px; text-transform: uppercase; font-size: 10px; }
+        
+        #log-box { font-family: monospace; font-size: 10px; color: #666; height: 300px; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="p-10">
-            <h1 class="text-2xl font-black italic gold uppercase">SIM <span class="text-white">CORE</span></h1>
-            <p class="text-[9px] opacity-30 uppercase tracking-[3px]">Hasavyurt Control</p>
-        </div>
-        <nav class="flex-grow space-y-1">
-            <div class="nav-link active" onclick="showTab('dash', this)">📊 Аналитика</div>
-            <div class="nav-link" onclick="showTab('nums', this)">📱 Номера</div>
-            <div class="nav-link" onclick="showTab('orders', this)">🛍️ Заявки</div>
-            <div class="nav-link" onclick="showTab('users', this)">👥 Клиенты & Роли</div>
-            <div class="nav-link" onclick="showTab('cms', this)">🖼️ CMS & Контент</div>
-            <div class="nav-link" onclick="showTab('support', this)">🎫 Поддержка</div>
-            <div class="nav-link" onclick="showTab('security', this)">🛡️ Безопасность</div>
-            <div class="nav-link" onclick="showTab('logs', this)">📜 Логи действий</div>
-        </nav>
-        <div class="p-6 border-t border-white/5">
-            <button onclick="location.reload()" class="w-full bg-white/5 py-3 rounded-xl text-[10px] font-bold uppercase hover:bg-white/10 transition">Обновить систему</button>
-        </div>
-    </aside>
+    <div class="overlay" onclick="toggleMenu()"></div>
 
-    <main class="main-content">
+    <div id="mobile-menu">
+        <div class="p-8 border-b border-white/5">
+            <h1 class="text-xl font-black italic gold uppercase">SIM CORE</h1>
+        </div>
+        <nav>
+            <div class="nav-item active" onclick="sw('dash', this)">📊 Аналитика</div>
+            <div class="nav-item" onclick="sw('nums', this)">📱 Номера</div>
+            <div class="nav-item" onclick="sw('orders', this)">🛍️ Заявки</div>
+            <div class="nav-item" onclick="sw('users', this)">👥 Клиенты</div>
+            <div class="nav-item" onclick="sw('cms', this)">🖼️ CMS</div>
+            <div class="nav-item" onclick="sw('support', this)">🎫 Поддержка</div>
+            <div class="nav-item" onclick="sw('security', this)">🛡️ Безопасность</div>
+            <div class="nav-item" onclick="sw('logs', this)">📜 Логи</div>
+        </nav>
+    </div>
+
+    <header class="p-4 flex justify-between items-center bg-[#0a0a0a] border-b border-white/5 sticky top-0 z-[500]">
+        <button onclick="toggleMenu()" class="text-2xl">☰</button>
+        <h2 id="page-title" class="text-xs font-black uppercase gold">Аналитика</h2>
+        <div class="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-black font-bold">K</div>
+    </header>
+
+    <main class="p-4">
         
         <section id="s-dash">
-            <h2 class="text-3xl font-black mb-8 italic gold uppercase">Дашборд</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div class="card">
-                    <p class="text-[10px] opacity-40 uppercase font-black mb-1">Регистраций сегодня</p>
-                    <h3 class="text-4xl font-black" id="stat-reg">0</h3>
-                </div>
-                <div class="card">
-                    <p class="text-[10px] opacity-40 uppercase font-black mb-1">Новых заявок</p>
-                    <h3 class="text-4xl font-black gold" id="stat-orders">0</h3>
-                </div>
-                <div class="card">
-                    <p class="text-[10px] opacity-40 uppercase font-black mb-1">Конверсия</p>
-                    <h3 class="text-4xl font-black text-green-500">14.2%</h3>
-                </div>
-                <div class="card">
-                    <p class="text-[10px] opacity-40 uppercase font-black mb-1">Активных IP</p>
-                    <h3 class="text-4xl font-black text-blue-500">12</h3>
-                </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="card text-center"><p class="text-[10px] opacity-40 uppercase">Юзеры</p><h3 id="stat-u" class="text-xl font-black">0</h3></div>
+                <div class="card text-center"><p class="text-[10px] opacity-40 uppercase">Заказы</p><h3 id="stat-o" class="text-xl font-black gold">0</h3></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="card"><canvas id="regChart"></canvas></div>
-                <div class="card">
-                    <h4 class="text-[10px] font-black opacity-30 mb-6 uppercase">Статистика трафика</h4>
-                    <div class="space-y-4">
-                        <div class="flex justify-between"><span>Прямые заходы</span><span class="gold font-bold">68%</span></div>
-                        <div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-gold h-1 w-[68%]"></div></div>
-                        <div class="flex justify-between"><span>Instagram</span><span class="gold font-bold">22%</span></div>
-                        <div class="w-full bg-white/5 h-1 rounded-full"><div class="bg-gold h-1 w-[22%]"></div></div>
-                    </div>
-                </div>
-            </div>
+            <div class="card"><canvas id="chart"></canvas></div>
         </section>
 
-        <section id="s-nums" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">Управление номерами</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 card mb-8">
-                <input type="text" id="in-num" placeholder="999 000 77 77">
+        <section id="s-nums" class="hidden space-y-4">
+            <div class="card space-y-3">
+                <input type="text" id="in-num" placeholder="Номер (999...)">
                 <input type="number" id="in-price" placeholder="Цена">
-                <select id="in-op">
-                    <option value="МТС">МТС</option>
-                    <option value="БИЛАЙН">Билайн</option>
-                    <option value="МЕГАФОН">Мегафон</option>
-                </select>
-                <button onclick="addNum()" class="bg-[#bf953f] text-black font-black uppercase text-xs rounded-xl py-4">Добавить</button>
+                <select id="in-op"><option>МТС</option><option>БИЛАЙН</option><option>МЕГАФОН</option></select>
+                <button onclick="addNum()" class="btn-action w-full">Добавить номер</button>
             </div>
             <div class="card overflow-x-auto">
-                <table id="tbl-nums">
-                    <thead><tr><th>Номер</th><th>Оператор</th><th>Цена</th><th class="text-right">Управление</th></tr></thead>
-                    <tbody id="list-nums"></tbody>
-                </table>
+                <table id="list-nums"></table>
             </div>
         </section>
 
         <section id="s-orders" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">Активные заявки</h2>
             <div class="card overflow-x-auto">
-                <table>
-                    <thead><tr><th>Дата</th><th>Имя</th><th>Телефон клиента</th><th>Номер</th><th class="text-right">Действие</th></tr></thead>
-                    <tbody id="list-orders"></tbody>
-                </table>
+                <table id="list-orders"></table>
             </div>
         </section>
 
         <section id="s-users" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">Клиенты & Роли</h2>
             <div class="card overflow-x-auto">
-                <table>
-                    <thead><tr><th>Телефон</th><th>Пароль</th><th>Роль</th><th>Статус</th><th class="text-right">Действие</th></tr></thead>
-                    <tbody id="list-users"></tbody>
-                </table>
+                <table id="list-users"></table>
             </div>
         </section>
 
         <section id="s-cms" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">CMS (Контент)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card space-y-4">
-                    <h3 class="text-xs font-bold opacity-30 uppercase">Редактор баннера</h3>
-                    <input type="text" placeholder="Заголовок (SEO)">
-                    <textarea placeholder="Текст на баннере" rows="4"></textarea>
-                    <button class="w-full bg-white text-black font-black py-3 rounded-xl text-xs uppercase">Обновить сайт</button>
-                </div>
-                <div class="card border-dashed border-2 border-white/5 flex flex-col items-center justify-center">
-                    <p class="text-xs opacity-20 mb-4">Загрузка логотипа / фото</p>
-                    <button class="bg-white/5 px-6 py-2 rounded-lg text-[10px] font-bold">ВЫБРАТЬ ФАЙЛ</button>
-                </div>
+            <div class="card space-y-4">
+                <h3 class="gold font-black uppercase text-xs">Настройки сайта</h3>
+                <input type="text" id="cms-title" placeholder="Заголовок сайта">
+                <textarea id="cms-desc" placeholder="Описание"></textarea>
+                <button onclick="saveCMS()" class="btn-action w-full">Сохранить</button>
             </div>
         </section>
 
-        <section id="s-security" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">Безопасность</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card space-y-6">
-                    <div class="flex justify-between"><span>2FA Аутентификация</span><span class="text-green-500 font-bold">ВКЛ</span></div>
-                    <div class="flex justify-between"><span>Защита от Brute-force</span><span class="text-green-500 font-bold">ВКЛ</span></div>
-                    <div class="flex justify-between"><span>Captcha при входе</span><span class="text-red-500 font-bold">ВЫКЛ</span></div>
-                </div>
-                <div class="card">
-                    <h3 class="text-xs font-bold opacity-30 mb-4 uppercase">Черный список (IP)</h3>
-                    <div id="ip-list" class="space-y-2 text-xs opacity-50">
-                        <div class="flex justify-between border-b border-white/5 py-2"><span>192.168.1.1</span><span>Blocked</span></div>
-                    </div>
-                </div>
+        <section id="s-support" class="hidden">
+            <div class="card">
+                <p class="opacity-30 text-xs text-center py-10 uppercase">Тикетов нет</p>
+            </div>
+        </section>
+
+        <section id="s-security" class="hidden space-y-4">
+            <div class="card flex justify-between items-center">
+                <span class="text-xs font-bold uppercase">2FA Защита</span>
+                <span class="text-green-500 font-bold text-xs">АКТИВНО</span>
+            </div>
+            <div class="card">
+                <h3 class="text-[10px] opacity-40 uppercase mb-3">Бан-лист IP</h3>
+                <div class="text-xs opacity-50">Список пуст</div>
             </div>
         </section>
 
         <section id="s-logs" class="hidden">
-            <h2 class="text-2xl font-black mb-8 italic uppercase">Журнал действий</h2>
-            <div class="card bg-black font-mono text-[10px] h-[500px] overflow-y-auto" id="log-box"></div>
+            <div class="card" id="log-box"></div>
         </section>
 
     </main>
 
     <script>
-        // FIREBASE INITIALIZATION
-        const conf = { 
+        const fb = firebase.initializeApp({ 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
-        };
-        firebase.initializeApp(conf);
-        const db = firebase.database();
+        });
+        const db = fb.database();
 
-        // TAB SWITCHER
-        function showTab(id, el) {
-            document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        function toggleMenu() {
+            document.getElementById('mobile-menu').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function sw(id, el) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('s-' + id).classList.remove('hidden');
+            document.getElementById('page-title').innerText = el.innerText.replace(/[^а-яА-Яa-zA-Z]/g, '');
             el.classList.add('active');
-            addLog(`Переход в раздел: ${id.toUpperCase()}`);
+            toggleMenu();
+            addLog("Переход: " + id);
         }
 
-        // LOGGING
-        function addLog(msg) {
-            const box = document.getElementById('log-box');
-            const time = new Date().toLocaleTimeString();
-            box.innerHTML = `<div class="log-line opacity-40">[${time}] <span class="gold">SYS:</span> ${msg}</div>` + box.innerHTML;
+        function addLog(m) {
+            const b = document.getElementById('log-box');
+            b.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${m}</div>` + b.innerHTML;
         }
 
-        // NUMBERS ENGINE
+        // РАБОЧИЕ ФУНКЦИИ
         function addNum() {
-            const num = document.getElementById('in-num').value;
-            const price = document.getElementById('in-price').value;
-            const op = document.getElementById('in-op').value;
-            if(!num || !price) return alert("Заполни поля!");
-            const id = Date.now();
-            db.ref('inventory/' + id).set({ id, num, price, op }).then(() => {
-                addLog(`Добавлен номер +7 ${num}`);
-                document.getElementById('in-num').value = "";
-                document.getElementById('in-price').value = "";
+            const n = document.getElementById('in-num').value;
+            const p = document.getElementById('in-price').value;
+            const o = document.getElementById('in-op').value;
+            if(!n || !p) return alert("Заполни!");
+            db.ref('inventory/' + Date.now()).set({ num: n, price: p, op: o }).then(() => {
+                alert("Добавлено!");
+                addLog("Добавлен номер: " + n);
             });
         }
 
-        function delNum(id) { if(confirm("Удалить номер?")) db.ref('inventory/' + id).remove(); }
+        function saveCMS() {
+            const t = document.getElementById('cms-title').value;
+            db.ref('settings').set({ title: t }).then(() => {
+                alert("Сайт обновлен!");
+                addLog("CMS изменена");
+            });
+        }
 
+        // ОБНОВЛЕНИЕ ДАННЫХ
         db.ref('inventory').on('value', snap => {
-            const container = document.getElementById('list-nums');
-            container.innerHTML = "";
-            const data = snap.val();
-            for(let id in data) {
-                const i = data[id];
-                container.innerHTML += `<tr><td class="font-bold italic text-lg">+7 ${i.num}</td><td><span class="bg-white/5 px-3 py-1 rounded-full text-[10px] font-black">${i.op}</span></td><td class="gold font-black">${i.price} ₽</td><td class="text-right"><button onclick="delNum('${id}')" class="text-red-500 text-[10px] font-bold">Удалить</button></td></tr>`;
-            }
-        });
-
-        // ORDERS & USERS REALTIME
-        db.ref('orders').on('value', snap => {
-            const container = document.getElementById('list-orders');
-            container.innerHTML = "";
-            const data = snap.val();
-            let count = 0;
-            for(let id in data) {
-                count++;
-                const o = data[id];
-                container.innerHTML += `<tr><td class="opacity-40 text-[10px]">${new Date(o.date).toLocaleString()}</td><td class="font-bold">${o.clientName}</td><td class="gold font-bold">${o.clientPhone}</td><td class="italic font-black">+7 ${o.wantedNum}</td><td class="text-right"><button class="text-green-500 font-bold text-[10px]">OK</button></td></tr>`;
-            }
-            document.getElementById('stat-orders').innerText = count;
+            const list = document.getElementById('list-nums');
+            list.innerHTML = "<tr><th>Номер</th><th>Цена</th><th></th></tr>";
+            snap.forEach(child => {
+                const i = child.val();
+                list.innerHTML += `<tr><td class="font-bold">+7 ${i.num}</td><td class="gold">${i.price}</td><td><button onclick="db.ref('inventory/${child.key}').remove()" class="text-red-500">❌</button></td></tr>`;
+            });
         });
 
         db.ref('users').on('value', snap => {
-            const container = document.getElementById('list-users');
-            container.innerHTML = "";
-            const data = snap.val();
-            let count = 0;
-            for(let ph in data) {
-                count++;
-                container.innerHTML += `<tr><td class="font-bold">+7 ${ph}</td><td class="opacity-30">${data[ph].pass}</td><td><select class="text-[10px] p-1"><option>User</option><option>Admin</option></select></td><td class="text-green-500 font-bold text-[10px]">Active</td><td class="text-right"><button class="text-red-500 font-bold text-[10px]">BAN</button></td></tr>`;
-            }
-            document.getElementById('stat-reg').innerText = count;
+            document.getElementById('stat-u').innerText = snap.numChildren();
+            const list = document.getElementById('list-users');
+            list.innerHTML = "<tr><th>Клиент</th><th>Пароль</th></tr>";
+            snap.forEach(child => {
+                list.innerHTML += `<tr><td>+7 ${child.key}</td><td class="opacity-40">${child.val().pass}</td></tr>`;
+            });
         });
 
-        // CHART INIT
-        const ctx = document.getElementById('regChart').getContext('2d');
+        db.ref('orders').on('value', snap => {
+            document.getElementById('stat-o').innerText = snap.numChildren();
+            const list = document.getElementById('list-orders');
+            list.innerHTML = "<tr><th>Имя</th><th>Заказ</th></tr>";
+            snap.forEach(child => {
+                const o = child.val();
+                list.innerHTML += `<tr><td class="font-bold">${o.clientName}</td><td class="gold">+7 ${o.wantedNum}</td></tr>`;
+            });
+        });
+
+        // ГРАФИК
+        const ctx = document.getElementById('chart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-                datasets: [{ label: 'Регистрации', data: [5, 12, 8, 15, 10, 20, 18], borderColor: '#bf953f', tension: 0.4, fill: true, backgroundColor: 'rgba(191,149,63,0.1)' }]
-            },
-            options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { color: '#111' } } } }
+            data: { labels: ['1', '2', '3', '4', '5'], datasets: [{ data: [2, 5, 4, 8, 12], borderColor: '#bf953f', tension: 0.4 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false } } } }
         });
 
-        addLog("Система CORE v4.0 запущена. Все модули активны.");
+        addLog("Система готова.");
     </script>
 </body>
 </html>
