@@ -3,115 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIM ADMIN</title>
+    <title>SIM MARKET | ADMIN CORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
+        body { font-family: 'Manrope', sans-serif; background: #050505; color: #fff; margin: 0; overflow-x: hidden; }
         .gold { color: #bf953f; }
-        .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 20px; padding: 15px; margin-bottom: 10px; }
-        input, select { background: #151515!important; color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; border: 1px solid #222; }
-        table { width: 100%; font-size: 13px; text-align: left; }
-        th { opacity: 0.3; padding: 10px; }
-        td { padding: 15px 10px; border-bottom: 1px solid #111; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .bg-gold { background: #bf953f; }
+        
+        /* БОКОВАЯ ПАНЕЛЬ (MENU) */
+        #side-menu { 
+            position: fixed; top: 0; left: -100%; width: 80%; height: 100%; 
+            background: #0d0d0d; z-index: 1000; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-right: 1px solid #bf953f33; box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        }
+        #side-menu.active { left: 0; }
+        .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; display: none; backdrop-filter: blur(4px); }
+        .menu-overlay.active { display: block; }
+
+        .nav-item { 
+            padding: 20px 25px; border-bottom: 1px solid #ffffff05; 
+            font-weight: 800; text-transform: uppercase; font-size: 11px; 
+            letter-spacing: 1px; color: #555; display: flex; align-items: center; gap: 15px;
+        }
+        .nav-item.active { color: #bf953f; background: #111; border-left: 4px solid #bf953f; }
+
+        .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 24px; padding: 18px; margin-bottom: 15px; }
+        input, select { background: #151515!important; border: 1px solid #222!important; color: #fff!important; padding: 14px; border-radius: 14px; width: 100%; font-size: 13px; }
+        
+        table { width: 100%; font-size: 12px; }
+        th { opacity: 0.2; text-transform: uppercase; font-size: 9px; padding: 10px; text-align: left; }
+        td { padding: 15px 10px; border-bottom: 1px solid #ffffff05; }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal.active { display: flex; }
     </style>
 </head>
 <body>
 
-    <header class="p-5 border-b border-white/5 flex justify-between">
-        <h2 class="gold font-black">SIM ADMIN</h2>
-        <span class="opacity-30">v4.0</span>
+    <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div id="side-menu">
+        <div class="p-8 border-b border-white/5">
+            <h1 class="text-2xl font-black italic gold uppercase">SIM <span class="text-white">CORE</span></h1>
+            <p class="text-[9px] opacity-30 tracking-[3px] mt-1 uppercase">Панель управления</p>
+        </div>
+        <nav class="mt-4">
+            <div class="nav-item active" onclick="sw('dash', this)">📊 Статистика</div>
+            <div class="nav-item" onclick="sw('users', this)">👥 Клиенты & Баны</div>
+            <div class="nav-item" onclick="sw('nums', this)">📱 Добавить номера</div>
+            <div class="nav-item" onclick="sw('orders', this)">🛍️ Заявки <span id="order-badge" class="bg-red-600 text-white text-[8px] px-2 py-0.5 rounded-full hidden">0</span></div>
+            <div class="nav-item" onclick="location.reload()">🔄 Обновить систему</div>
+        </nav>
+    </div>
+
+    <header class="p-5 flex justify-between items-center sticky top-0 bg-[#050505]/80 backdrop-blur-md z-[500] border-b border-white/5">
+        <button onclick="toggleMenu()" class="text-2xl">☰</button>
+        <h2 id="page-title" class="text-[10px] font-black uppercase gold tracking-widest">Статистика</h2>
+        <div class="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-black font-black text-xs">K</div>
     </header>
 
     <main class="p-4">
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="card text-center"><p class="text-[10px] opacity-30">КЛИЕНТЫ</p><h3 id="c-count" class="text-xl font-bold">0</h3></div>
-            <div class="card text-center"><p class="text-[10px] opacity-30">ЗАЯВКИ</p><h3 id="o-count" class="text-xl font-bold gold">0</h3></div>
-        </div>
-
-        <div class="card">
-            <h3 class="mb-4 font-bold uppercase text-xs opacity-50 italic">Добавить номер</h3>
-            <div class="space-y-3">
-                <input type="text" id="n-val" placeholder="Номер">
-                <input type="number" id="p-val" placeholder="Цена">
-                <select id="o-val"><option>МТС</option><option>БИЛАЙН</option><option>МЕГАФОН</option></select>
-                <button onclick="addN()" class="w-full bg-[#bf953f] text-black font-black py-3 rounded-xl uppercase text-xs">Добавить</button>
+        
+        <section id="s-dash">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="card text-center"><p class="text-[9px] opacity-30 uppercase font-black">Клиенты</p><h3 id="stat-u" class="text-2xl font-bold">0</h3></div>
+                <div class="card text-center"><p class="text-[9px] opacity-30 uppercase font-black">Заказы</p><h3 id="stat-o" class="text-2xl font-bold gold">0</h3></div>
             </div>
-        </div>
+            <div class="card mt-4 p-10 text-center opacity-20 italic text-sm">График активности (в разработке)</div>
+        </section>
 
-        <div class="card overflow-x-auto mt-6">
-            <h3 class="mb-4 font-bold uppercase text-xs opacity-50 italic">База клиентов</h3>
-            <table>
-                <thead><tr><th>Телефон</th><th>Статус</th><th></th></tr></thead>
-                <tbody id="user-list"></tbody>
-            </table>
-        </div>
+        <section id="s-users" class="hidden">
+            <div class="card overflow-x-auto">
+                <table>
+                    <thead><tr><th>Клиент / Имя</th><th>Статус</th><th>Действие</th></tr></thead>
+                    <tbody id="list-users"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="s-nums" class="hidden">
+            <div class="card space-y-3">
+                <h4 class="gold font-black uppercase text-[10px] mb-2 italic">Новый номер в базу</h4>
+                <input type="text" id="in-num" placeholder="Номер (например: 999 000 77 77)">
+                <input type="number" id="in-price" placeholder="Цена (руб)">
+                <select id="in-op">
+                    <option value="МТС">МТС</option>
+                    <option value="БИЛАЙН">Билайн</option>
+                    <option value="МЕГАФОН">Мегафон</option>
+                </select>
+                <button onclick="addNumber()" class="bg-gold text-black w-full py-4 rounded-xl font-black uppercase text-xs">Добавить в продажу</button>
+            </div>
+        </section>
+
+        <section id="s-orders" class="hidden">
+            <div id="list-orders" class="space-y-4">
+                </div>
+        </section>
+
     </main>
 
-    <div id="u-modal" class="modal">
+    <div id="user-modal" class="modal">
         <div class="card w-full max-w-sm border-gold/30">
-            <h3 id="u-phone" class="text-xl font-black gold mb-6">Управление</h3>
+            <h3 id="modal-phone" class="text-xl font-black gold mb-6">Управление</h3>
             <div class="space-y-4">
-                <button onclick="applyBan(24)" class="w-full bg-orange-600 p-4 rounded-xl font-black uppercase text-xs">Бан на 24 часа</button>
-                <button onclick="applyBan('forever')" class="w-full bg-red-600 p-4 rounded-xl font-black uppercase text-xs">Бан НАВСЕГДА</button>
-                <button onclick="unban()" class="w-full border border-green-500 text-green-500 p-4 rounded-xl font-black uppercase text-xs">Разблокировать</button>
-                <button onclick="closeM()" class="w-full opacity-20 uppercase text-[10px] mt-4">Отмена</button>
+                <button onclick="applyBan(24)" class="w-full bg-orange-600 p-4 rounded-xl font-black uppercase text-[10px]">Бан на 24 часа</button>
+                <button onclick="applyBan('forever')" class="w-full bg-red-600 p-4 rounded-xl font-black uppercase text-[10px]">Бан навсегда</button>
+                <button onclick="unban()" class="w-full border border-green-500 text-green-500 p-4 rounded-xl font-black uppercase text-[10px]">Разблокировать</button>
+                <button onclick="closeModal()" class="w-full opacity-30 text-[10px] font-black uppercase mt-4">Закрыть</button>
             </div>
         </div>
     </div>
 
     <script>
-        const config = { 
+        const conf = { 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
         };
-        firebase.initializeApp(config);
+        firebase.initializeApp(conf);
         const db = firebase.database();
         let activeUser = "";
 
-        function closeM() { document.getElementById('u-modal').classList.remove('active'); }
-        function openM(ph) { activeUser = ph; document.getElementById('u-phone').innerText = "+7 " + ph; document.getElementById('u-modal').classList.add('active'); }
+        // ЛОГИКА МЕНЮ
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
 
-        // ЗАГРУЗКА КЛИЕНТОВ
+        function sw(id, el) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('s-' + id).classList.remove('hidden');
+            document.getElementById('page-title').innerText = el.innerText.split(' ')[1];
+            el.classList.add('active');
+            toggleMenu();
+        }
+
+        // --- КЛИЕНТЫ И БАНЫ ---
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('user-list');
+            const list = document.getElementById('list-users');
             list.innerHTML = "";
             let count = 0;
-            snap.forEach(c => {
+            snap.forEach(child => {
                 count++;
-                const u = c.val();
-                const ph = c.key;
-                let status = "✅ OK";
-                if(u.banned) status = (u.banned === 'forever') ? "🚫 PERM" : "⏳ 24H";
-                list.innerHTML += `<tr>
-                    <td class="font-bold">+7 ${ph}</td>
-                    <td class="${u.banned ? 'text-red-500' : 'text-green-500'}">${status}</td>
-                    <td><button onclick="openM('${ph}')">⚙️</button></td>
-                </tr>`;
+                const u = child.val();
+                const ph = child.key;
+                const status = u.banned ? (u.banned === 'forever' ? '🚫 ПЕРМ' : '⏳ 24Ч') : '✅ OK';
+                list.innerHTML += `
+                    <tr onclick="openUserM('${ph}')">
+                        <td><div class="font-bold">${u.name || 'Без имени'}</div><div class="text-[9px] opacity-40">+7 ${ph}</div></td>
+                        <td class="${u.banned ? 'text-red-500' : 'text-green-500'} font-black text-[10px]">${status}</td>
+                        <td class="text-right">⚙️</td>
+                    </tr>`;
             });
-            document.getElementById('c-count').innerText = count;
+            document.getElementById('stat-u').innerText = count;
         });
 
-        // БАН
-        function applyBan(type) {
-            const val = (type === 'forever') ? 'forever' : Date.now() + (24*60*60*1000);
-            db.ref('users/' + activeUser).update({ banned: val }).then(() => { closeM(); alert("Забанен"); });
-        }
-        function unban() {
-            db.ref('users/' + activeUser + '/banned').remove().then(() => { closeM(); alert("Разбанен"); });
-        }
+        function openUserM(ph) { activeUser = ph; document.getElementById('modal-phone').innerText = "+7 " + ph; document.getElementById('user-modal').classList.add('active'); }
+        function closeModal() { document.getElementById('user-modal').classList.remove('active'); }
 
-        function addN() {
-            const n = document.getElementById('n-val').value;
-            const p = document.getElementById('p-val').value;
-            const o = document.getElementById('o-val').value;
-            db.ref('inventory/' + Date.now()).set({ num: n, price: p, op: o }).then(() => alert("Ок"));
+        function applyBan(t) {
+            const val = (t === 'forever') ? 'forever' : Date.now() + (24*60*60*1000);
+            db.ref('users/' + activeUser).update({ banned: val }).then(() => { closeModal(); alert("Забанен!"); });
         }
-        
-        db.ref('orders').on('value', snap => { document.getElementById('o-count').innerText = snap.numChildren(); });
+        function unban() { db.ref('users/' + activeUser + '/banned').remove().then(() => { closeModal(); alert("Разбанен!"); }); }
+
+        // --- ЗАЯВКИ ---
+        db.ref('orders').on('value', snap => {
+            const list = document.getElementById('list-orders');
+            list.innerHTML = "";
+            let count = 0;
+            snap.forEach(child => {
+                count++;
+                const o = child.val();
+                const id = child.key;
+                list.innerHTML += `
+                    <div class="card border-l-4 border-gold">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-black text-white text-lg">${o.clientName}</h4>
+                                <p class="text-xs gold font-bold">+7 ${o.clientPhone}</p>
+                            </div>
+                            <span class="text-[9px] opacity-30">${o.date}</span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-xl mb-4">
+                            <p class="text-[9px] opacity-40 uppercase">Хочет купить номер:</p>
+                            <p class="text-xl font-black italic tracking-tighter">+7 ${o.wantedNum} <span class="text-[10px] opacity-30">(${o.operator})</span></p>
+                        </div>
+                        <button onclick="db.ref('orders/${id}').remove()" class="w-full py-3 bg-green-600/20 text-green-500 rounded-xl font-black uppercase text-[10px]">Выполнено / Удалить</button>
+                    </div>`;
+            });
+            document.getElementById('stat-o').innerText = count;
+            const b = document.getElementById('order-badge');
+            if(count > 0) { b.innerText = count; b.classList.remove('hidden'); } else { b.classList.add('hidden'); }
+        });
+
+        // --- ДОБАВЛЕНИЕ НОМЕРА ---
+        function addNumber() {
+            const num = document.getElementById('in-num').value;
+            const price = document.getElementById('in-price').value;
+            const op = document.getElementById('in-op').value;
+            if(!num || !price) return alert("Заполни поля!");
+            db.ref('inventory/' + Date.now()).set({ num, price, op }).then(() => {
+                alert("Номер добавлен в базу!");
+                document.getElementById('in-num').value = "";
+                document.getElementById('in-price').value = "";
+            });
+        }
     </script>
 </body>
 </html>
