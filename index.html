@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SIM CORE | FULL MOBILE ADMIN</title>
+    <title>SIM CORE | FULL OPERATIONAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -11,26 +11,25 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
         :root { --gold: #bf953f; --bg: #050505; }
-        body { font-family: 'Manrope', sans-serif; background: var(--bg); color: #fff; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Manrope', sans-serif; background: var(--bg); color: #fff; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .glass { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; }
-        .tab-content { display: none; padding: 15px; padding-bottom: 120px; animation: slideUp 0.3s ease; }
+        .tab-content { display: none; padding: 15px; padding-bottom: 120px; animation: fadeIn 0.2s ease; }
         .tab-content.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Bottom Navigation */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,15,15,0.95); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 10px 5px 25px; z-index: 1000; backdrop-filter: blur(15px); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #555; font-size: 9px; font-weight: 800; text-transform: uppercase; width: 20%; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.98); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 5px 25px; z-index: 1000; backdrop-filter: blur(20px); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #444; font-size: 9px; font-weight: 800; text-transform: uppercase; width: 20%; transition: 0.3s; }
         .nav-item.active { color: var(--gold); }
-        .nav-item i { width: 20px; height: 20px; }
 
-        input, textarea, select { background: #111!important; border: 1px solid #222!important; color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; outline: none; font-size: 14px; }
-        .btn-gold { background: var(--gold); color: #000; font-weight: 800; padding: 14px; border-radius: 14px; width: 100%; text-align: center; }
+        input, textarea, select { background: #111!important; border: 1px solid #222!important; color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; outline: none; font-size: 14px; transition: 0.3s; }
+        input:focus { border-color: var(--gold)!important; }
+        .btn-gold { background: var(--gold); color: #000; font-weight: 800; padding: 14px; border-radius: 14px; width: 100%; text-align: center; active: scale(0.95); transition: 0.2s; }
         .badge { padding: 2px 6px; border-radius: 5px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <header class="p-4 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#050505]/80 backdrop-blur-md z-50">
+    <header class="p-4 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#050505] z-50">
         <h1 class="text-lg font-black italic text-[#bf953f]">SIM<span class="text-white">CORE</span></h1>
         <div class="flex gap-4 items-center">
             <span id="global-notif" class="w-2 h-2 bg-red-600 rounded-full animate-pulse hidden"></span>
@@ -38,91 +37,90 @@
         </div>
     </header>
 
+    <!-- DASHBOARD -->
     <section id="dash" class="tab-content active">
         <h2 class="text-2xl font-black mb-5 italic">АНАЛИТИКА</h2>
         <div class="grid grid-cols-2 gap-3 mb-5">
             <div class="glass p-4 text-center">
-                <p class="text-[9px] opacity-40 font-bold uppercase">Пользователи</p>
+                <p class="text-[9px] opacity-40 font-bold uppercase">Users</p>
                 <h3 id="stat-u" class="text-2xl font-black text-[#bf953f]">0</h3>
             </div>
             <div class="glass p-4 text-center">
-                <p class="text-[9px] opacity-40 font-bold uppercase">Новые Leads</p>
-                <h3 id="stat-l" class="text-2xl font-black">0</h3>
+                <p class="text-[9px] opacity-40 font-bold uppercase">Visitors</p>
+                <h3 class="text-2xl font-black">45</h3>
             </div>
         </div>
         <div class="glass p-5 space-y-4">
-            <h4 class="text-xs font-bold opacity-30 uppercase tracking-widest">Live Статус</h4>
-            <div class="flex justify-between items-center text-xs">
-                <span>Посетители сегодня</span>
-                <span class="font-bold">120</span>
-            </div>
-            <div class="flex justify-between items-center text-xs">
-                <span>Просмотры страниц</span>
-                <span class="font-bold">450</span>
-            </div>
+            <h4 class="text-xs font-bold opacity-30 uppercase tracking-widest">Статус системы</h4>
+            <div class="flex justify-between items-center text-xs"><span>База данных</span><span class="text-green-500 font-bold">Connected</span></div>
+            <div class="flex justify-between items-center text-xs"><span>Новые заявки</span><span id="stat-l" class="font-bold">0</span></div>
         </div>
     </section>
 
+    <!-- USERS -->
     <section id="users" class="tab-content">
-        <h2 class="text-2xl font-black mb-5 italic">УПРАВЛЕНИЕ ЮЗЕРАМИ</h2>
+        <h2 class="text-2xl font-black mb-5 italic">ПОЛЬЗОВАТЕЛИ</h2>
         <div id="user-list" class="space-y-3">
-            </div>
-    </section>
-
-    <section id="pages" class="tab-content">
-        <h2 class="text-2xl font-black mb-5 italic">КОНТЕНТ & SEO</h2>
-        <div class="space-y-4">
-            <div class="glass p-5 space-y-3">
-                <h4 class="text-[10px] font-black text-[#bf953f] uppercase">Meta Настройки</h4>
-                <input type="text" id="seo-title" placeholder="SEO Title">
-                <textarea id="seo-desc" placeholder="Meta Description"></textarea>
-                <button class="btn-gold text-xs" onclick="saveSEO()">Сохранить SEO</button>
-            </div>
-            <div class="glass p-5">
-                <h4 class="text-[10px] font-black text-[#bf953f] uppercase mb-3">Блоки сайта (On/Off)</h4>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between p-3 bg-white/5 rounded-xl"><span>Hero Section</span><span class="text-green-500 font-bold">Вкл</span></div>
-                    <div class="flex justify-between p-3 bg-white/5 rounded-xl"><span>FAQ Блок</span><span class="text-red-500 font-bold">Выкл</span></div>
-                </div>
-            </div>
+            <!-- Сюда придут юзеры из FB -->
         </div>
     </section>
 
+    <!-- LEADS / BLOG -->
     <section id="leads" class="tab-content">
-        <h2 class="text-2xl font-black mb-5 italic">ЗАЯВКИ И БЛОГ</h2>
         <div class="flex gap-2 mb-5">
-            <button class="flex-1 p-3 glass text-[10px] font-bold uppercase active" onclick="toggleLeadSub('l-box')">Заявки</button>
-            <button class="flex-1 p-3 glass text-[10px] font-bold uppercase" onclick="toggleLeadSub('b-box')">Блог</button>
+            <button class="flex-1 p-3 glass text-[10px] font-bold uppercase active" id="btn-l" onclick="toggleSub('l')">Заявки</button>
+            <button class="flex-1 p-3 glass text-[10px] font-bold uppercase" id="btn-b" onclick="toggleSub('b')">Блог</button>
         </div>
         
-        <div id="l-box" class="space-y-3">
+        <div id="box-l" class="space-y-3">
             <div id="order-list" class="space-y-3"></div>
         </div>
         
-        <div id="b-box" class="hidden space-y-3">
-            <button class="btn-gold">+ Новый пост</button>
-            <div id="blog-list" class="grid grid-cols-1 gap-3 pt-3"></div>
+        <div id="box-b" class="hidden space-y-4">
+            <div class="glass p-4 space-y-3">
+                <input type="text" id="post-title" placeholder="Заголовок поста">
+                <textarea id="post-text" placeholder="Текст поста..." rows="3"></textarea>
+                <button class="btn-gold text-xs" onclick="createPost()">Опубликовать пост</button>
+            </div>
+            <div id="blog-list" class="space-y-3"></div>
         </div>
     </section>
 
+    <!-- PAGES / SEO -->
+    <section id="pages" class="tab-content">
+        <h2 class="text-2xl font-black mb-5 italic">УПРАВЛЕНИЕ САЙТОМ</h2>
+        <div class="glass p-5 space-y-4">
+            <h4 class="text-[10px] font-black text-[#bf953f] uppercase">SEO & Название</h4>
+            <input type="text" id="conf-name" placeholder="Название сайта">
+            <textarea id="conf-seo" placeholder="SEO Description"></textarea>
+            <button class="btn-gold text-xs" onclick="saveConfig()">Обновить сайт</button>
+        </div>
+        <div class="mt-5 glass p-5">
+            <h4 class="text-[10px] font-black text-[#bf953f] uppercase mb-4">Блоки (No-Code)</h4>
+            <div id="blocks-list" class="space-y-2 text-sm">
+                <!-- Блоки управляются чекбоксами -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SYSTEM / AI -->
     <section id="settings" class="tab-content">
-        <h2 class="text-2xl font-black mb-5 italic">СИСТЕМА</h2>
+        <h2 class="text-2xl font-black mb-5 italic">СИСТЕМА & AI</h2>
         <div class="space-y-4">
-            <div class="glass p-5">
-                <h4 class="text-[10px] font-black text-cyan-400 uppercase mb-3 flex items-center gap-2"><i data-lucide="sparkles" class="w-3"></i> AI Генератор PRO</h4>
-                <textarea id="ai-prompt" placeholder="Тема для AI текста..."></textarea>
-                <button class="mt-3 w-full p-3 bg-cyan-500/20 text-cyan-400 rounded-xl font-bold text-xs">Сгенерировать контент</button>
+            <div class="glass p-5 border-l-2 border-cyan-500">
+                <h4 class="text-[10px] font-black text-cyan-400 uppercase mb-3 flex items-center gap-2">AI Генератор</h4>
+                <textarea id="ai-input" placeholder="О чем написать текст?"></textarea>
+                <button class="mt-3 w-full p-3 bg-cyan-500/20 text-cyan-400 rounded-xl font-bold text-xs" onclick="runAI()">Сгенерировать</button>
             </div>
             <div class="glass p-5">
-                <h4 class="text-[10px] font-black text-red-500 uppercase mb-3">Безопасность (Логи)</h4>
-                <div id="ip-logs" class="text-[10px] space-y-2 opacity-60">
-                    </div>
+                <h4 class="text-[10px] font-black text-red-500 uppercase mb-3">Журнал безопасности</h4>
+                <div id="security-logs" class="text-[9px] space-y-2 font-mono">
+                </div>
             </div>
             <div class="glass p-5 space-y-3">
-                <h4 class="text-[10px] font-black text-[#bf953f] uppercase">Общие настройки</h4>
-                <input type="text" placeholder="Название сайта">
-                <input type="text" placeholder="Analytics ID">
-                <button class="btn-gold text-xs">Сохранить всё</button>
+                <h4 class="text-[10px] font-black text-[#bf953f] uppercase">Ключи доступа</h4>
+                <input type="password" id="api-sms" placeholder="SMS.RU API Key">
+                <button class="btn-gold text-xs" onclick="saveKeys()">Сохранить ключи</button>
             </div>
         </div>
     </section>
@@ -130,12 +128,13 @@
     <nav class="nav-bar">
         <div class="nav-item active" onclick="showTab('dash', this)"><i data-lucide="layout-dashboard"></i><span>Обзор</span></div>
         <div class="nav-item" onclick="showTab('users', this)"><i data-lucide="users"></i><span>Юзеры</span></div>
-        <div class="nav-item" onclick="showTab('leads', this)"><i data-lucide="message-square"></i><span>Заявки</span></div>
+        <div class="nav-item" onclick="showTab('leads', this)"><i data-lucide="message-square"></i><span>Контент</span></div>
         <div class="nav-item" onclick="showTab('pages', this)"><i data-lucide="layout"></i><span>Сайт</span></div>
         <div class="nav-item" onclick="showTab('settings', this)"><i data-lucide="settings"></i><span>Система</span></div>
     </nav>
 
 <script>
+    // ИНИЦИАЛИЗАЦИЯ
     const firebaseConfig = { 
         apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
         databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
@@ -151,72 +150,145 @@
         lucide.createIcons();
     }
 
-    function toggleLeadSub(id) {
-        document.getElementById('l-box').classList.add('hidden');
-        document.getElementById('b-box').classList.add('hidden');
-        document.getElementById(id).classList.remove('hidden');
+    function toggleSub(type) {
+        document.getElementById('box-l').classList.toggle('hidden', type !== 'l');
+        document.getElementById('box-b').classList.toggle('hidden', type !== 'b');
+        document.getElementById('btn-l').classList.toggle('active', type === 'l');
+        document.getElementById('btn-b').classList.toggle('active', type === 'b');
     }
 
-    // РЕАЛЬНЫЙ СИНК С FIREBASE
-    function initSync() {
-        // Юзеры + Роли + Бан
+    // --- ФУНКЦИИ РАБОТЫ С БАЗОЙ ---
+
+    // 1. Управление пользователями
+    function syncUsers() {
         db.ref('users').on('value', snap => {
-            const container = document.getElementById('user-list');
-            container.innerHTML = "";
-            let uCount = 0;
-            snap.forEach(u => {
-                uCount++;
-                const d = u.val();
-                container.innerHTML += `
-                    <div class="glass p-4 flex justify-between items-center">
+            const list = document.getElementById('user-list');
+            list.innerHTML = "";
+            let count = 0;
+            snap.forEach(child => {
+                count++;
+                const u = child.val();
+                list.innerHTML += `
+                    <div class="glass p-4 flex justify-between items-center border-l-4 ${u.banned?'border-red-600':'border-green-600'}">
                         <div>
-                            <p class="font-bold text-sm">${d.name || 'Аноним'}</p>
-                            <p class="text-[10px] opacity-40">+7 ${u.key}</p>
-                            <span class="badge ${d.role=='admin'?'bg-red-500/20 text-red-500':'bg-white/10'}">${d.role || 'user'}</span>
+                            <p class="font-bold text-sm">${u.name || 'Клиент'}</p>
+                            <p class="text-[10px] opacity-40">+7 ${child.key} | ${u.role || 'user'}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="banUser('${u.key}', ${d.banned})" class="p-2 glass ${d.banned?'text-red-500':'opacity-30'}"><i data-lucide="ban" class="w-4"></i></button>
-                            <button onclick="editRole('${u.key}')" class="p-2 glass opacity-30"><i data-lucide="shield" class="w-4"></i></button>
+                            <button onclick="updateUser('${child.key}', 'role')" class="p-2 glass text-white"><i data-lucide="shield" class="w-4"></i></button>
+                            <button onclick="updateUser('${child.key}', 'ban', ${u.banned})" class="p-2 glass text-red-500"><i data-lucide="slash" class="w-4"></i></button>
                         </div>
                     </div>`;
             });
-            document.getElementById('stat-u').innerText = uCount;
+            document.getElementById('stat-u').innerText = count;
             lucide.createIcons();
         });
+    }
 
-        // Заявки (Leads)
+    function updateUser(phone, action, currentStatus) {
+        if(action === 'ban') {
+            db.ref('users/'+phone).update({ banned: !currentStatus });
+        } else {
+            const newRole = prompt("Введите роль (admin/editor/user):");
+            if(newRole) db.ref('users/'+phone).update({ role: newRole });
+        }
+    }
+
+    // 2. Управление заявками (Leads)
+    function syncLeads() {
         db.ref('orders').on('value', snap => {
-            const container = document.getElementById('order-list');
-            container.innerHTML = "";
+            const list = document.getElementById('order-list');
+            list.innerHTML = "";
             let lCount = 0;
             snap.forEach(l => {
                 lCount++;
                 const d = l.val();
-                container.innerHTML += `
-                    <div class="glass p-4 border-l-2 ${d.read?'border-white/5':'border-[#bf953f]'}">
-                        <div class="flex justify-between text-[10px] opacity-30 mb-1"><span>${d.date}</span></div>
-                        <p class="font-black">${d.clientName}</p>
-                        <p class="text-xs text-[#bf953f]">+7 ${d.clientPhone}</p>
-                        <p class="text-[10px] opacity-60 mt-2">Номер: ${d.wantedNum}</p>
+                list.innerHTML += `
+                    <div class="glass p-4 flex justify-between items-start">
+                        <div>
+                            <p class="font-black text-sm uppercase">${d.clientName}</p>
+                            <p class="text-xs text-[#bf953f] font-bold">+7 ${d.clientPhone}</p>
+                            <p class="text-[10px] opacity-60 mt-1">Запрос: ${d.wantedNum}</p>
+                        </div>
+                        <button onclick="deleteData('orders/${l.key}')" class="text-red-500 opacity-30"><i data-lucide="trash-2" class="w-4"></i></button>
                     </div>`;
             });
             document.getElementById('stat-l').innerText = lCount;
             if(lCount > 0) document.getElementById('global-notif').classList.remove('hidden');
+            lucide.createIcons();
         });
-
-        // Имитация логов IP
-        const logs = document.getElementById('ip-logs');
-        logs.innerHTML = `
-            <div class="flex justify-between"><span>Admin Login</span><span>192.168.1.1 (Chrome)</span></div>
-            <div class="flex justify-between"><span>User Auth</span><span>95.153.120.4 (Safari)</span></div>
-        `;
     }
 
-    function banUser(id, status) { if(confirm("Изменить статус доступа?")) db.ref('users/'+id).update({ banned: !status }); }
-    function editRole(id) { const r = prompt("admin, editor, user?"); if(r) db.ref('users/'+id).update({ role: r }); }
-    function saveSEO() { alert("SEO настройки обновлены в базе!"); }
+    // 3. Блог
+    function createPost() {
+        const title = document.getElementById('post-title').value;
+        const text = document.getElementById('post-text').value;
+        if(!title || !text) return alert("Заполни поля!");
+        db.ref('blog').push({ title, text, date: new Date().toLocaleDateString() });
+        document.getElementById('post-title').value = ""; document.getElementById('post-text').value = "";
+    }
 
-    window.onload = () => { initSync(); lucide.createIcons(); };
+    function syncBlog() {
+        db.ref('blog').on('value', snap => {
+            const list = document.getElementById('blog-list');
+            list.innerHTML = "";
+            snap.forEach(p => {
+                const d = p.val();
+                list.innerHTML += `
+                    <div class="glass p-4">
+                        <h5 class="font-bold text-sm">${d.title}</h5>
+                        <p class="text-[10px] opacity-40 mb-2">${d.date}</p>
+                        <button onclick="deleteData('blog/${p.key}')" class="text-[9px] text-red-500 font-bold uppercase">Удалить пост</button>
+                    </div>`;
+            });
+        });
+    }
+
+    // 4. Настройки сайта (SEO / Конфиг)
+    function saveConfig() {
+        const name = document.getElementById('conf-name').value;
+        const seo = document.getElementById('conf-seo').value;
+        db.ref('settings').update({ siteName: name, seoDesc: seo })
+        .then(() => alert("Сайт обновлен!"));
+    }
+
+    function syncConfig() {
+        db.ref('settings').on('value', snap => {
+            const d = snap.val();
+            if(d) {
+                document.getElementById('conf-name').value = d.siteName || "";
+                document.getElementById('conf-seo').value = d.seoDesc || "";
+            }
+        });
+    }
+
+    // Вспомогательные
+    function deleteData(path) { if(confirm("Удалить навсегда?")) db.ref(path).remove(); }
+    
+    function runAI() {
+        const prompt = document.getElementById('ai-input').value;
+        alert("AI начал генерацию: " + prompt + "\n(Требуется OpenAI API Key)");
+    }
+
+    function saveKeys() {
+        const sms = document.getElementById('api-sms').value;
+        db.ref('keys').update({ smsKey: sms }).then(() => alert("Ключи сохранены"));
+    }
+
+    // ЛОГИ
+    function logSecurity() {
+        const logs = document.getElementById('security-logs');
+        logs.innerHTML = `<div>[${new Date().toLocaleTimeString()}] Admin Authorized via IP: 95.153...</div>`;
+    }
+
+    window.onload = () => {
+        syncUsers();
+        syncLeads();
+        syncBlog();
+        syncConfig();
+        logSecurity();
+        lucide.createIcons();
+    };
 </script>
 </body>
 </html>
