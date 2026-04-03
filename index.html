@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-MARKET | SUPER ADMIN</title>
+    <title>S-MARKET | PRO ADMIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
-        body { background: #000; color: #fff; font-family: 'Manrope', sans-serif; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap');
+        body { background: #000; color: #fff; font-family: 'Manrope', sans-serif; margin: 0; padding-bottom: 60px; }
+        .gold-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
         .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 24px; padding: 20px; }
         input, select, textarea { 
             background: #111!important; border: 1px solid #222!important; 
             color: #fff!important; padding: 14px; border-radius: 16px; width: 100%; outline: none; font-size: 14px;
         }
-        input:focus { border-color: #bf953f!important; }
-        .nav-btn { padding: 12px; border-radius: 14px; font-weight: 800; font-size: 10px; text-transform: uppercase; opacity: 0.4; flex: 1; text-align: center; border: 1px solid transparent; transition: 0.3s; }
+        .nav-btn { padding: 12px; border-radius: 14px; font-weight: 800; font-size: 10px; text-transform: uppercase; opacity: 0.4; flex: 1; text-align: center; border: 1px solid transparent; }
         .nav-btn.active { opacity: 1; background: rgba(191,149,63,0.1); border-color: #bf953f; color: #bf953f; }
-        .btn-gold { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); color: #000; font-weight: 900; padding: 16px; border-radius: 18px; width: 100%; text-transform: uppercase; font-size: 12px; transition: transform 0.2s; }
-        .btn-gold:active { transform: scale(0.98); }
-        .gold-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #bf953f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
+        .btn-gold { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); color: #000; font-weight: 900; padding: 16px; border-radius: 18px; width: 100%; text-transform: uppercase; font-size: 12px; }
+        .btn-gold:disabled { opacity: 0.5; filter: grayscale(1); }
     </style>
 </head>
-<body class="p-4 pb-24">
+<body class="p-4">
 
     <div class="max-w-xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl italic gold-text">SIM-ADMIN</h1>
-            <span class="text-[9px] bg-white/5 px-3 py-1 rounded-full text-gray-500 font-bold uppercase tracking-widest">Control Panel</span>
-        </div>
+        <h1 class="text-2xl italic gold-text my-6 text-center">SIM-ADMIN PANEL</h1>
 
         <!-- МЕНЮ -->
         <nav class="flex gap-2 mb-8 bg-[#0d0d0d] p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
@@ -41,17 +37,14 @@
 
         <!-- 1. РЕКЛАМА -->
         <div id="section-promo" class="tab-content space-y-4">
-            <div class="card border-dashed border-[#bf953f]/20">
-                <h2 class="text-[10px] font-black uppercase text-gray-500 mb-4 tracking-widest">Выставить баннер</h2>
-                <div class="space-y-4">
-                    <div class="relative">
-                        <input type="file" id="ad-file" class="hidden" accept="image/*" onchange="previewFile()">
-                        <label for="ad-file" class="flex flex-col items-center justify-center p-10 bg-black border-2 border-dashed border-white/5 rounded-3xl cursor-pointer hover:border-[#bf953f]/40">
-                            <span id="file-label" class="text-[11px] font-black text-[#bf953f] uppercase tracking-tighter text-center">Нажми сюда, чтобы<br>выбрать фото</span>
-                        </label>
-                    </div>
-                    <input type="text" id="ad-title" placeholder="Заголовок акции">
-                    <textarea id="ad-text" rows="2" placeholder="Описание предложения..."></textarea>
+            <div class="card border-dashed border-[#bf953f]/30 text-center">
+                <input type="file" id="ad-file" class="hidden" accept="image/*" onchange="previewFile()">
+                <label for="ad-file" id="file-label" class="flex flex-col items-center justify-center p-12 bg-black border-2 border-dashed border-white/5 rounded-3xl cursor-pointer text-[#bf953f] font-black uppercase text-[11px]">
+                    ВЫБРАТЬ ФОТО ДЛЯ РЕКЛАМЫ
+                </label>
+                <div class="space-y-4 mt-4">
+                    <input type="text" id="ad-title" placeholder="Заголовок (например: АКЦИЯ!)">
+                    <textarea id="ad-text" rows="2" placeholder="Текст акции..."></textarea>
                     <button id="pub-btn" onclick="publishAd()" class="btn-gold">ОПУБЛИКОВАТЬ</button>
                 </div>
             </div>
@@ -60,39 +53,38 @@
         <!-- 2. НОМЕРА -->
         <div id="section-sim" class="tab-content hidden space-y-4">
             <div class="card">
-                <h2 class="text-[10px] font-black uppercase text-gray-500 mb-4 tracking-widest">Новый товар</h2>
-                <div class="space-y-3">
-                    <input type="text" id="sim-num" placeholder="900 000-00-00">
-                    <input type="number" id="sim-price" placeholder="Цена">
-                    <select id="sim-op">
-                        <option value="МЕГАФОН">МЕГАФОН</option>
-                        <option value="БИЛАЙН">БИЛАЙН</option>
-                        <option value="МТС">МТС</option>
-                        <option value="ТЕЛЕ2">ТЕЛЕ2</option>
-                    </select>
-                    <button onclick="addSim()" class="btn-gold">Добавить в базу</button>
-                </div>
+                <h2 class="text-[10px] font-black uppercase text-gray-500 mb-4">Добавить номер</h2>
+                <input type="text" id="sim-num" placeholder="900 000-00-00" class="mb-3">
+                <input type="number" id="sim-price" placeholder="Цена" class="mb-3">
+                <select id="sim-op" class="mb-3">
+                    <option value="МЕГАФОН">МЕГАФОН</option>
+                    <option value="БИЛАЙН">БИЛАЙН</option>
+                    <option value="МТС">МТС</option>
+                    <option value="ТЕЛЕ2">ТЕЛЕ2</option>
+                </select>
+                <button onclick="addSim()" class="btn-gold">ДОБАВИТЬ В КАТАЛОГ</button>
             </div>
         </div>
 
         <!-- 3. ЗАКАЗЫ -->
-        <div id="section-orders" class="tab-content hidden space-y-4">
+        <div id="section-orders" class="tab-content hidden space-y-3">
             <div class="flex justify-between items-center px-2">
-                <h2 class="text-[10px] font-black uppercase text-gray-500 tracking-widest text-white">Список заявок</h2>
-                <button onclick="clearOrders()" class="text-[9px] text-red-500 font-bold uppercase">Очистить всё</button>
+                <h2 class="text-[10px] font-bold text-gray-500 uppercase">Новые заказы</h2>
+                <button onclick="db.ref('orders').remove()" class="text-[9px] text-red-500 font-bold">ОЧИСТИТЬ</button>
             </div>
             <div id="orders-container" class="space-y-3"></div>
         </div>
 
         <!-- 4. КЛИЕНТЫ -->
-        <div id="section-users" class="tab-content hidden space-y-4">
-            <h2 class="text-[10px] font-black uppercase text-gray-500 px-2 tracking-widest text-white">Банк участников</h2>
+        <div id="section-users" class="tab-content hidden space-y-2">
+            <h2 class="text-[10px] font-bold text-gray-500 uppercase px-2 mb-2">Банк участников</h2>
             <div id="users-container" class="space-y-2"></div>
         </div>
 
     </div>
 
     <script>
+        // FIREBASE CONFIG
         const conf = { 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
@@ -111,58 +103,54 @@
 
         function previewFile() {
             const f = document.getElementById('ad-file').files[0];
-            if(f) document.getElementById('file-label').innerHTML = `ВЫБРАНО:<br><span class='text-white'>${f.name}</span>`;
+            if(f) document.getElementById('file-label').innerText = "ФОТО ВЫБРАНО: " + f.name;
         }
 
-        // --- ЛОГИКА РЕКЛАМЫ (ТВОЙ КЛЮЧ И ВШИТАЯ ПРОВЕРКА) ---
+        // --- РЕКЛАМА (ТВОЙ КЛЮЧ И ПРОВЕРКА) ---
         async function publishAd() {
             const fileInput = document.getElementById('ad-file');
-            const t = document.getElementById('ad-title').value;
-            const desc = document.getElementById('ad-text').value;
+            const title = document.getElementById('ad-title').value;
+            const text = document.getElementById('ad-text').value;
             const btn = document.getElementById('pub-btn');
             
-            if(!fileInput.files[0] || !t) return alert("Выбери фото и впиши заголовок!");
+            if(!fileInput.files[0] || !title) return alert("Выбери фото и впиши заголовок!");
 
             btn.disabled = true; 
-            btn.innerText = "ИДЕТ ЗАГРУЗКА...";
+            btn.innerText = "ЗАГРУЗКА...";
             
             const formData = new FormData();
             formData.append("image", fileInput.files[0]);
 
             try {
-                // ИСПОЛЬЗУЕМ ТВОЙ КЛЮЧ
-                const myApiKey = "08dbbd52689aaf4866d654df10d0ed1"; 
-                const res = await fetch(`https://api.imgbb.com/1/upload?key=${myApiKey}`, {
+                // ТВОЙ КЛЮЧ ImgBB (Исправлен)
+                const apiKey = "08dbbd52689aaf4866d654df10d0ed1"; 
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
                     method: "POST", body: formData
                 });
                 
                 const result = await res.json();
                 
-                if (result.success && result.data && result.data.url) {
+                if (result.success) {
                     await db.ref('blog/promo').set({
-                        image: result.data.url, title: t, text: desc, date: Date.now()
+                        image: result.data.url, title: title, text: text, date: Date.now()
                     });
-                    alert("Реклама успешно опубликована на сайте!");
+                    alert("Готово! Реклама обновлена.");
                     location.reload();
                 } else {
-                    throw new Error(result.error ? result.error.message : "Ошибка ImgBB");
+                    alert("Ошибка ключа: " + result.error.message);
                 }
-            } catch(e) { 
-                alert("Ошибка: " + e.message); 
-                btn.disabled = false; 
-                btn.innerText = "ОПУБЛИКОВАТЬ";
-            }
+            } catch(e) { alert("Ошибка: " + e.message); }
+            finally { btn.disabled = false; btn.innerText = "ОПУБЛИКОВАТЬ"; }
         }
 
         function addSim() {
-            const n = document.getElementById('sim-num').value;
-            const p = document.getElementById('sim-price').value;
-            const o = document.getElementById('sim-op').value;
-            if(!n || !p) return;
-            db.ref('inventory').push({ num: n, price: p, op: o }).then(() => {
+            const num = document.getElementById('sim-num').value;
+            const price = document.getElementById('sim-price').value;
+            const op = document.getElementById('sim-op').value;
+            if(!num || !price) return;
+            db.ref('inventory').push({ num, price, op }).then(() => {
                 alert("Номер добавлен!");
                 document.getElementById('sim-num').value = "";
-                document.getElementById('sim-price').value = "";
             });
         }
 
@@ -174,14 +162,11 @@
                     const o = c.val();
                     container.innerHTML += `
                         <div class="card border-l-2 border-[#bf953f]">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-[18px] font-black italic">+7 ${o.wantedNum}</p><p class="text-[10px] text-[#bf953f] font-bold uppercase mt-1">${o.operator}</p></div>
-                                <button onclick="db.ref('orders/${c.key}').remove()" class="text-gray-600 text-xs font-bold">УДАЛИТЬ</button>
+                            <div class="flex justify-between">
+                                <p class="text-lg font-black">+7 ${o.wantedNum}</p>
+                                <button onclick="db.ref('orders/${c.key}').remove()" class="text-xs opacity-50">✕</button>
                             </div>
-                            <div class="mt-4 pt-4 border-t border-white/5 text-[12px]">
-                                <p class="opacity-50">Имя: <span class="text-white font-bold">${o.clientName}</span></p>
-                                <p class="opacity-50 mt-1">Связь: <a href="tel:${o.clientPhone}" class="text-[#bf953f] font-bold">+7 ${o.clientPhone}</a></p>
-                            </div>
+                            <p class="text-xs mt-2 opacity-70">${o.clientName} | +7 ${o.clientPhone}</p>
                         </div>`;
                 });
             });
@@ -194,15 +179,13 @@
                 snap.forEach(c => {
                     const u = c.val();
                     container.innerHTML += `
-                        <div class="flex items-center justify-between p-4 bg-[#0d0d0d] rounded-2xl border border-white/5">
-                            <div><p class="text-xs font-black uppercase text-white">${u.name || 'КЛИЕНТ'}</p><p class="text-[10px] text-gray-500">+7 ${c.key}</p></div>
-                            <p class="text-[9px] text-[#bf953f] font-bold">PASS: ${u.pass}</p>
+                        <div class="flex justify-between p-4 bg-[#0d0d0d] rounded-2xl border border-white/5">
+                            <div><p class="text-xs font-bold">${u.name || 'КЛИЕНТ'}</p><p class="text-[10px] opacity-40">+7 ${c.key}</p></div>
+                            <p class="text-[10px] text-[#bf953f] font-bold">PASS: ${u.pass}</p>
                         </div>`;
                 });
             });
         }
-
-        function clearOrders() { if(confirm("Удалить все заказы?")) db.ref('orders').remove(); }
     </script>
 </body>
 </html>
