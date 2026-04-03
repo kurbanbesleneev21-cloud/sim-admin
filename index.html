@@ -3,79 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN PANEL | SIM MARKET</title>
+    <title>S-MARKET | SUPER ADMIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; }
-        .card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap');
+        body { background: #000; color: #fff; font-family: 'Manrope', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 24px; padding: 20px; }
         input, select, textarea { 
-            background: #1a1a1a!important; border: 1px solid #333!important; 
-            color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; outline: none;
+            background: #111!important; border: 1px solid #222!important; 
+            color: #fff!important; padding: 14px; border-radius: 16px; width: 100%; outline: none; font-size: 14px;
         }
-        .tab-btn { padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 12px; opacity: 0.5; }
-        .tab-btn.active { opacity: 1; background: #bf953f; color: #000; }
-        .btn-main { background: #bf953f; color: #000; font-weight: 900; padding: 15px; border-radius: 15px; width: 100%; transition: 0.3s; }
-        .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
+        input:focus { border-color: #bf953f!important; }
+        .nav-btn { padding: 12px; border-radius: 14px; font-weight: 800; font-size: 10px; text-transform: uppercase; opacity: 0.4; flex: 1; text-align: center; border: 1px solid transparent; transition: 0.3s; }
+        .nav-btn.active { opacity: 1; background: rgba(191,149,63,0.1); border-color: #bf953f; color: #bf953f; }
+        .btn-gold { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); color: #000; font-weight: 900; padding: 16px; border-radius: 18px; width: 100%; text-transform: uppercase; font-size: 12px; transition: transform 0.2s; }
+        .btn-gold:active { transform: scale(0.98); }
+        .gold-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #bf953f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
     </style>
 </head>
-<body class="p-4 pb-20">
+<body class="p-4 pb-24">
 
     <div class="max-w-xl mx-auto">
-        <h1 class="text-2xl font-black text-[#bf953f] mb-6 tracking-tighter">УПРАВЛЕНИЕ САЙТОМ</h1>
-
-        <!-- Навигация -->
-        <div class="flex gap-2 mb-6 bg-[#111] p-1 rounded-14px border border-white/5">
-            <button onclick="showTab('tab-promo')" id="btn-tab-promo" class="tab-btn active">РЕКЛАМА</button>
-            <button onclick="showTab('tab-sim')" id="btn-tab-sim" class="tab-btn">НОМЕРА</button>
-            <button onclick="showTab('tab-orders')" id="btn-tab-orders" class="tab-btn">ЗАКАЗЫ</button>
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl italic gold-text">SIM-ADMIN</h1>
+            <span class="text-[9px] bg-white/5 px-3 py-1 rounded-full text-gray-500 font-bold uppercase tracking-widest">Control Panel</span>
         </div>
 
-        <!-- ВКЛАДКА: РЕКЛАМА -->
-        <div id="tab-promo" class="tab-content space-y-4">
-            <div class="card">
-                <h2 class="font-bold mb-4 uppercase text-xs text-gray-400 tracking-widest">Выставить рекламу</h2>
+        <!-- МЕНЮ -->
+        <nav class="flex gap-2 mb-8 bg-[#0d0d0d] p-1.5 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
+            <button onclick="showTab('promo')" id="tab-promo-btn" class="nav-btn active">Реклама</button>
+            <button onclick="showTab('sim')" id="tab-sim-btn" class="nav-btn">Номера</button>
+            <button onclick="showTab('orders')" id="tab-orders-btn" class="nav-btn">Заказы</button>
+            <button onclick="showTab('users')" id="tab-users-btn" class="nav-btn">Клиенты</button>
+        </nav>
+
+        <!-- 1. РЕКЛАМА -->
+        <div id="section-promo" class="tab-content space-y-4">
+            <div class="card border-dashed border-[#bf953f]/20">
+                <h2 class="text-[10px] font-black uppercase text-gray-500 mb-4 tracking-widest">Выставить баннер</h2>
                 <div class="space-y-4">
-                    <div class="border-2 border-dashed border-[#333] p-6 rounded-2xl text-center" id="drop-zone">
-                        <input type="file" id="file-input" accept="image/*" class="hidden">
-                        <label for="file-input" class="cursor-pointer">
-                            <span id="file-status" class="text-xs font-bold text-[#bf953f]">Нажмите, чтобы выбрать ФОТО</span>
+                    <div class="relative">
+                        <input type="file" id="ad-file" class="hidden" accept="image/*" onchange="previewFile()">
+                        <label for="ad-file" class="flex flex-col items-center justify-center p-10 bg-black border-2 border-dashed border-white/5 rounded-3xl cursor-pointer hover:border-[#bf953f]/40">
+                            <span id="file-label" class="text-[11px] font-black text-[#bf953f] uppercase tracking-tighter text-center">Нажми сюда, чтобы<br>выбрать фото</span>
                         </label>
                     </div>
                     <input type="text" id="ad-title" placeholder="Заголовок акции">
-                    <textarea id="ad-text" rows="2" placeholder="Описание акции..."></textarea>
-                    <button id="save-ad-btn" onclick="uploadAndSaveAd()" class="btn-main">ОПУБЛИКОВАТЬ</button>
+                    <textarea id="ad-text" rows="2" placeholder="Описание предложения..."></textarea>
+                    <button id="pub-btn" onclick="publishAd()" class="btn-gold">ОПУБЛИКОВАТЬ</button>
                 </div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: НОМЕРА -->
-        <div id="tab-sim" class="tab-content hidden space-y-4">
+        <!-- 2. НОМЕРА -->
+        <div id="section-sim" class="tab-content hidden space-y-4">
             <div class="card">
-                <h2 class="font-bold mb-4 uppercase text-xs text-gray-400">Добавить новый номер</h2>
-                <div class="space-y-4">
-                    <input type="text" id="sim-num" placeholder="900 555-02-04">
-                    <input type="number" id="sim-price" placeholder="Цена (руб)">
+                <h2 class="text-[10px] font-black uppercase text-gray-500 mb-4 tracking-widest">Новый товар</h2>
+                <div class="space-y-3">
+                    <input type="text" id="sim-num" placeholder="900 000-00-00">
+                    <input type="number" id="sim-price" placeholder="Цена">
                     <select id="sim-op">
                         <option value="МЕГАФОН">МЕГАФОН</option>
                         <option value="БИЛАЙН">БИЛАЙН</option>
                         <option value="МТС">МТС</option>
                         <option value="ТЕЛЕ2">ТЕЛЕ2</option>
                     </select>
-                    <button onclick="addSim()" class="btn-main">ДОБАВИТЬ В КАТАЛОГ</button>
+                    <button onclick="addSim()" class="btn-gold">Добавить в базу</button>
                 </div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: ЗАКАЗЫ -->
-        <div id="tab-orders" class="tab-content hidden space-y-3">
-            <h2 class="font-bold uppercase text-xs text-gray-400 ml-2">Список заявок</h2>
-            <div id="orders-list" class="space-y-3">
-                <!-- Заказы подгрузятся сюда -->
+        <!-- 3. ЗАКАЗЫ -->
+        <div id="section-orders" class="tab-content hidden space-y-4">
+            <div class="flex justify-between items-center px-2">
+                <h2 class="text-[10px] font-black uppercase text-gray-500 tracking-widest text-white">Список заявок</h2>
+                <button onclick="clearOrders()" class="text-[9px] text-red-500 font-bold uppercase">Очистить всё</button>
             </div>
+            <div id="orders-container" class="space-y-3"></div>
         </div>
+
+        <!-- 4. КЛИЕНТЫ -->
+        <div id="section-users" class="tab-content hidden space-y-4">
+            <h2 class="text-[10px] font-black uppercase text-gray-500 px-2 tracking-widest text-white">Банк участников</h2>
+            <div id="users-container" class="space-y-2"></div>
+        </div>
+
     </div>
 
     <script>
@@ -86,97 +100,109 @@
         firebase.initializeApp(conf);
         const db = firebase.database();
 
-        // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById('btn-' + id).classList.add('active');
-            if(id === 'tab-orders') loadOrders();
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('section-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab + '-btn').classList.add('active');
+            if(tab === 'orders') loadOrders();
+            if(tab === 'users') loadUsers();
         }
 
-        // ЗАГРУЗКА ФОТО И СОХРАНЕНИЕ РЕКЛАМЫ
-        async function uploadAndSaveAd() {
-            const fileInput = document.getElementById('file-input');
-            const title = document.getElementById('ad-title').value;
-            const text = document.getElementById('ad-text').value;
-            const btn = document.getElementById('save-ad-btn');
+        function previewFile() {
+            const f = document.getElementById('ad-file').files[0];
+            if(f) document.getElementById('file-label').innerHTML = `ВЫБРАНО:<br><span class='text-white'>${f.name}</span>`;
+        }
 
-            if (!fileInput.files[0]) return alert("Сначала выбери фото!");
+        // --- ЛОГИКА РЕКЛАМЫ (ТВОЙ КЛЮЧ И ВШИТАЯ ПРОВЕРКА) ---
+        async function publishAd() {
+            const fileInput = document.getElementById('ad-file');
+            const t = document.getElementById('ad-title').value;
+            const desc = document.getElementById('ad-text').value;
+            const btn = document.getElementById('pub-btn');
             
-            btn.disabled = true;
-            btn.innerText = "ЗАГРУЗКА ФОТО...";
+            if(!fileInput.files[0] || !t) return alert("Выбери фото и впиши заголовок!");
 
-            // Используем бесплатный API ImgBB для загрузки картинок
+            btn.disabled = true; 
+            btn.innerText = "ИДЕТ ЗАГРУЗКА...";
+            
             const formData = new FormData();
             formData.append("image", fileInput.files[0]);
 
             try {
-                // Твой ключ API ImgBB (я вставил временный, лучше создай свой на imgbb.com)
-                const response = await fetch("https://api.imgbb.com/1/upload?key=698e6c757a3e79216093414902188182", {
-                    method: "POST",
-                    body: formData
+                // ИСПОЛЬЗУЕМ ТВОЙ КЛЮЧ
+                const myApiKey = "08dbbd52689aaf4866d654df10d0ed1"; 
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${myApiKey}`, {
+                    method: "POST", body: formData
                 });
-                const result = await response.json();
-                const imageUrl = result.data.url;
-
-                // Сохраняем всё в Firebase
-                await db.ref('blog/promo').set({
-                    image: imageUrl,
-                    title: title,
-                    text: text,
-                    time: Date.now()
-                });
-
-                alert("Реклама успешно опубликована!");
-                location.reload();
-            } catch (err) {
-                alert("Ошибка при загрузке: " + err);
-                btn.disabled = false;
+                
+                const result = await res.json();
+                
+                if (result.success && result.data && result.data.url) {
+                    await db.ref('blog/promo').set({
+                        image: result.data.url, title: t, text: desc, date: Date.now()
+                    });
+                    alert("Реклама успешно опубликована на сайте!");
+                    location.reload();
+                } else {
+                    throw new Error(result.error ? result.error.message : "Ошибка ImgBB");
+                }
+            } catch(e) { 
+                alert("Ошибка: " + e.message); 
+                btn.disabled = false; 
                 btn.innerText = "ОПУБЛИКОВАТЬ";
             }
         }
 
-        // ДОБАВИТЬ НОМЕР
         function addSim() {
-            const num = document.getElementById('sim-num').value;
-            const price = document.getElementById('sim-price').value;
-            const op = document.getElementById('sim-op').value;
-            if(!num || !price) return alert("Заполни данные!");
-
-            db.ref('inventory').push({ num, price, op }).then(() => {
+            const n = document.getElementById('sim-num').value;
+            const p = document.getElementById('sim-price').value;
+            const o = document.getElementById('sim-op').value;
+            if(!n || !p) return;
+            db.ref('inventory').push({ num: n, price: p, op: o }).then(() => {
                 alert("Номер добавлен!");
                 document.getElementById('sim-num').value = "";
                 document.getElementById('sim-price').value = "";
             });
         }
 
-        // ЗАГРУЗКА ЗАКАЗОВ
         function loadOrders() {
             db.ref('orders').on('value', snap => {
-                const list = document.getElementById('orders-list');
-                list.innerHTML = "";
-                if(!snap.exists()) list.innerHTML = "<p class='text-center opacity-30 mt-10'>Нет новых заказов</p>";
-                
-                snap.forEach(child => {
-                    const o = child.val();
-                    list.innerHTML += `
-                        <div class="card border-l-4 border-[#bf953f]">
-                            <p class="text-[10px] text-gray-500 font-bold mb-1">${o.date}</p>
-                            <h3 class="text-lg font-black">+7 ${o.wantedNum}</h3>
-                            <div class="mt-2 text-sm">
-                                <p><span class="opacity-50">Клиент:</span> ${o.clientName}</p>
-                                <p><span class="opacity-50">Связь:</span> <a href="tel:${o.clientPhone}" class="text-[#bf953f] font-bold">+7 ${o.clientPhone}</a></p>
+                const container = document.getElementById('orders-container');
+                container.innerHTML = "";
+                snap.forEach(c => {
+                    const o = c.val();
+                    container.innerHTML += `
+                        <div class="card border-l-2 border-[#bf953f]">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-[18px] font-black italic">+7 ${o.wantedNum}</p><p class="text-[10px] text-[#bf953f] font-bold uppercase mt-1">${o.operator}</p></div>
+                                <button onclick="db.ref('orders/${c.key}').remove()" class="text-gray-600 text-xs font-bold">УДАЛИТЬ</button>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/5 text-[12px]">
+                                <p class="opacity-50">Имя: <span class="text-white font-bold">${o.clientName}</span></p>
+                                <p class="opacity-50 mt-1">Связь: <a href="tel:${o.clientPhone}" class="text-[#bf953f] font-bold">+7 ${o.clientPhone}</a></p>
                             </div>
                         </div>`;
                 });
             });
         }
 
-        // Статус файла
-        document.getElementById('file-input').onchange = function() {
-            document.getElementById('file-status').innerText = "ФОТО ВЫБРАНО: " + this.files[0].name;
-        };
+        function loadUsers() {
+            db.ref('users').on('value', snap => {
+                const container = document.getElementById('users-container');
+                container.innerHTML = "";
+                snap.forEach(c => {
+                    const u = c.val();
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between p-4 bg-[#0d0d0d] rounded-2xl border border-white/5">
+                            <div><p class="text-xs font-black uppercase text-white">${u.name || 'КЛИЕНТ'}</p><p class="text-[10px] text-gray-500">+7 ${c.key}</p></div>
+                            <p class="text-[9px] text-[#bf953f] font-bold">PASS: ${u.pass}</p>
+                        </div>`;
+                });
+            });
+        }
+
+        function clearOrders() { if(confirm("Удалить все заказы?")) db.ref('orders').remove(); }
     </script>
 </body>
 </html>
