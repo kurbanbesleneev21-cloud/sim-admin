@@ -3,71 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIM MARKET | ADMIN PANEL</title>
+    <title>ADMIN PANEL | SIM MARKET</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { background: #050505; color: #fff; font-family: sans-serif; }
-        .admin-card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 24px; }
-        input, textarea, select { 
-            background: #1a1a1a !important; border: 1px solid #333 !important; 
-            color: #fff !important; padding: 12px; border-radius: 12px; width: 100%; outline: none;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        .card { background: #111; border: 1px solid #222; border-radius: 20px; padding: 20px; }
+        input, select, textarea { 
+            background: #1a1a1a!important; border: 1px solid #333!important; 
+            color: #fff!important; padding: 12px; border-radius: 12px; width: 100%; outline: none;
         }
-        input:focus { border-color: #bf953f !important; }
-        .btn-gold { 
-            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728); 
-            color: #000; font-weight: 800; padding: 14px; border-radius: 12px; transition: opacity 0.2s;
-        }
-        .btn-gold:active { opacity: 0.8; }
+        .tab-btn { padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 12px; opacity: 0.5; }
+        .tab-btn.active { opacity: 1; background: #bf953f; color: #000; }
+        .btn-main { background: #bf953f; color: #000; font-weight: 900; padding: 15px; border-radius: 15px; width: 100%; transition: 0.3s; }
+        .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 pb-20">
 
-    <div class="max-w-2xl mx-auto space-y-8">
-        <h1 class="text-3xl font-black text-[#bf953f] italic">ПАНЕЛЬ УПРАВЛЕНИЯ</h1>
+    <div class="max-w-xl mx-auto">
+        <h1 class="text-2xl font-black text-[#bf953f] mb-6 tracking-tighter">УПРАВЛЕНИЕ САЙТОМ</h1>
 
-        <!-- БЛОК 1: УПРАВЛЕНИЕ РЕКЛАМОЙ -->
-        <div class="admin-card">
-            <h2 class="text-xl font-bold mb-4 text-white">Рекламный баннер (Фото + Текст)</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold ml-2">Ссылка на картинку или GIF</label>
-                    <input type="text" id="ad-image" placeholder="https://site.com/image.jpg">
+        <!-- Навигация -->
+        <div class="flex gap-2 mb-6 bg-[#111] p-1 rounded-14px border border-white/5">
+            <button onclick="showTab('tab-promo')" id="btn-tab-promo" class="tab-btn active">РЕКЛАМА</button>
+            <button onclick="showTab('tab-sim')" id="btn-tab-sim" class="tab-btn">НОМЕРА</button>
+            <button onclick="showTab('tab-orders')" id="btn-tab-orders" class="tab-btn">ЗАКАЗЫ</button>
+        </div>
+
+        <!-- ВКЛАДКА: РЕКЛАМА -->
+        <div id="tab-promo" class="tab-content space-y-4">
+            <div class="card">
+                <h2 class="font-bold mb-4 uppercase text-xs text-gray-400 tracking-widest">Выставить рекламу</h2>
+                <div class="space-y-4">
+                    <div class="border-2 border-dashed border-[#333] p-6 rounded-2xl text-center" id="drop-zone">
+                        <input type="file" id="file-input" accept="image/*" class="hidden">
+                        <label for="file-input" class="cursor-pointer">
+                            <span id="file-status" class="text-xs font-bold text-[#bf953f]">Нажмите, чтобы выбрать ФОТО</span>
+                        </label>
+                    </div>
+                    <input type="text" id="ad-title" placeholder="Заголовок акции">
+                    <textarea id="ad-text" rows="2" placeholder="Описание акции..."></textarea>
+                    <button id="save-ad-btn" onclick="uploadAndSaveAd()" class="btn-main">ОПУБЛИКОВАТЬ</button>
                 </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold ml-2">Заголовок акции</label>
-                    <input type="text" id="ad-title" placeholder="Например: Скидка 50% на золото">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase text-gray-500 font-bold ml-2">Текст объявления</label>
-                    <textarea id="ad-text" rows="2" placeholder="Подробности акции..."></textarea>
-                </div>
-                <button onclick="updateAd()" class="btn-gold w-full">ОПУБЛИКОВАТЬ РЕКЛАМУ</button>
             </div>
         </div>
 
-        <!-- БЛОК 2: ДОБАВЛЕНИЕ НОМЕРА -->
-        <div class="admin-card">
-            <h2 class="text-xl font-bold mb-4 text-white">Добавить SIM-карту</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" id="num" placeholder="900-000-00-00">
-                <input type="number" id="price" placeholder="Цена (руб)">
-                <select id="op">
-                    <option value="МЕГАФОН">МЕГАФОН</option>
-                    <option value="БИЛАЙН">БИЛАЙН</option>
-                    <option value="МТС">МТС</option>
-                    <option value="ТЕЛЕ2">ТЕЛЕ2</option>
-                </select>
-                <button onclick="addSim()" class="btn-gold">ДОБАВИТЬ НОМЕР</button>
+        <!-- ВКЛАДКА: НОМЕРА -->
+        <div id="tab-sim" class="tab-content hidden space-y-4">
+            <div class="card">
+                <h2 class="font-bold mb-4 uppercase text-xs text-gray-400">Добавить новый номер</h2>
+                <div class="space-y-4">
+                    <input type="text" id="sim-num" placeholder="900 555-02-04">
+                    <input type="number" id="sim-price" placeholder="Цена (руб)">
+                    <select id="sim-op">
+                        <option value="МЕГАФОН">МЕГАФОН</option>
+                        <option value="БИЛАЙН">БИЛАЙН</option>
+                        <option value="МТС">МТС</option>
+                        <option value="ТЕЛЕ2">ТЕЛЕ2</option>
+                    </select>
+                    <button onclick="addSim()" class="btn-main">ДОБАВИТЬ В КАТАЛОГ</button>
+                </div>
             </div>
         </div>
 
-        <!-- Список заявок можно добавить сюда ниже -->
+        <!-- ВКЛАДКА: ЗАКАЗЫ -->
+        <div id="tab-orders" class="tab-content hidden space-y-3">
+            <h2 class="font-bold uppercase text-xs text-gray-400 ml-2">Список заявок</h2>
+            <div id="orders-list" class="space-y-3">
+                <!-- Заказы подгрузятся сюда -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // Твои настройки Firebase
         const conf = { 
             apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44", 
             databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com" 
@@ -75,41 +86,97 @@
         firebase.initializeApp(conf);
         const db = firebase.database();
 
-        // ФУНКЦИЯ ОБНОВЛЕНИЯ РЕКЛАМЫ
-        function updateAd() {
-            const img = document.getElementById('ad-image').value;
+        // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById('btn-' + id).classList.add('active');
+            if(id === 'tab-orders') loadOrders();
+        }
+
+        // ЗАГРУЗКА ФОТО И СОХРАНЕНИЕ РЕКЛАМЫ
+        async function uploadAndSaveAd() {
+            const fileInput = document.getElementById('file-input');
             const title = document.getElementById('ad-title').value;
             const text = document.getElementById('ad-text').value;
+            const btn = document.getElementById('save-ad-btn');
 
-            if(!title || !text) return alert("Заполни хотя бы заголовок и текст!");
+            if (!fileInput.files[0]) return alert("Сначала выбери фото!");
+            
+            btn.disabled = true;
+            btn.innerText = "ЗАГРУЗКА ФОТО...";
 
-            // Мы используем .set() для пути 'blog/main', чтобы всегда перезаписывать одну и ту же рекламу
-            db.ref('blog').set({
-                promo: {
-                    image: img,
+            // Используем бесплатный API ImgBB для загрузки картинок
+            const formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+
+            try {
+                // Твой ключ API ImgBB (я вставил временный, лучше создай свой на imgbb.com)
+                const response = await fetch("https://api.imgbb.com/1/upload?key=698e6c757a3e79216093414902188182", {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                const imageUrl = result.data.url;
+
+                // Сохраняем всё в Firebase
+                await db.ref('blog/promo').set({
+                    image: imageUrl,
                     title: title,
                     text: text,
-                    timestamp: Date.now()
-                }
-            }).then(() => {
-                alert("Реклама успешно обновлена на сайте!");
-            }).catch(err => alert("Ошибка: " + err));
+                    time: Date.now()
+                });
+
+                alert("Реклама успешно опубликована!");
+                location.reload();
+            } catch (err) {
+                alert("Ошибка при загрузке: " + err);
+                btn.disabled = false;
+                btn.innerText = "ОПУБЛИКОВАТЬ";
+            }
         }
 
-        // ФУНКЦИЯ ДОБАВЛЕНИЯ НОМЕРА
+        // ДОБАВИТЬ НОМЕР
         function addSim() {
-            const n = document.getElementById('num').value;
-            const p = document.getElementById('price').value;
-            const o = document.getElementById('op').value;
-            if(!n || !p) return alert("Заполни данные номера!");
+            const num = document.getElementById('sim-num').value;
+            const price = document.getElementById('sim-price').value;
+            const op = document.getElementById('sim-op').value;
+            if(!num || !price) return alert("Заполни данные!");
 
-            db.ref('inventory').push({ num: n, price: p, op: o })
-            .then(() => {
+            db.ref('inventory').push({ num, price, op }).then(() => {
                 alert("Номер добавлен!");
-                document.getElementById('num').value = "";
-                document.getElementById('price').value = "";
+                document.getElementById('sim-num').value = "";
+                document.getElementById('sim-price').value = "";
             });
         }
+
+        // ЗАГРУЗКА ЗАКАЗОВ
+        function loadOrders() {
+            db.ref('orders').on('value', snap => {
+                const list = document.getElementById('orders-list');
+                list.innerHTML = "";
+                if(!snap.exists()) list.innerHTML = "<p class='text-center opacity-30 mt-10'>Нет новых заказов</p>";
+                
+                snap.forEach(child => {
+                    const o = child.val();
+                    list.innerHTML += `
+                        <div class="card border-l-4 border-[#bf953f]">
+                            <p class="text-[10px] text-gray-500 font-bold mb-1">${o.date}</p>
+                            <h3 class="text-lg font-black">+7 ${o.wantedNum}</h3>
+                            <div class="mt-2 text-sm">
+                                <p><span class="opacity-50">Клиент:</span> ${o.clientName}</p>
+                                <p><span class="opacity-50">Связь:</span> <a href="tel:${o.clientPhone}" class="text-[#bf953f] font-bold">+7 ${o.clientPhone}</a></p>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        // Статус файла
+        document.getElementById('file-input').onchange = function() {
+            document.getElementById('file-status').innerText = "ФОТО ВЫБРАНО: " + this.files[0].name;
+        };
     </script>
 </body>
 </html>
