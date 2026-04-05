@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-MARKET | Админ-панель PRO</title>
+    <title>S-MARKET | PRO Админ-панель</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -161,7 +161,7 @@
 <div id="usersTab" class="tab-content fade-in">
     <div class="admin-card">
         <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-users"></i> Пользователи</h2>
-        <input type="text" id="userSearch" placeholder="Поиск..." class="mb-4">
+        <input type="text" id="userSearch" placeholder="Поиск по имени, email или телефону..." class="mb-4">
         <div id="usersList" class="space-y-3 max-h-96 overflow-y-auto"></div>
     </div>
 </div>
@@ -181,12 +181,12 @@
             <button onclick="addNumber()">➕ Добавить</button>
         </div>
         <div class="bg-white/5 p-4 rounded-xl mb-6">
-            <h3 class="font-bold mb-3">📁 Массовое добавление</h3>
+            <h3 class="font-bold mb-3">📁 Массовое добавление (CSV/Excel)</h3>
             <input type="file" id="excelFile" accept=".csv,.xlsx">
-            <button onclick="importExcel()" class="bg-blue-600 text-white">Импортировать</button>
+            <button onclick="importExcel()" class="bg-blue-600 text-white">📤 Импортировать</button>
         </div>
         <div class="flex gap-3 mb-4 flex-wrap">
-            <input type="text" id="filterNum" placeholder="Поиск..." class="w-auto flex-1">
+            <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="w-auto flex-1">
             <select id="filterOperator" class="w-auto"><option value="">Все операторы</option><option value="МЕГАФОН">МЕГАФОН</option><option value="БИЛАЙН">БИЛАЙН</option><option value="МТС">МТС</option></select>
         </div>
         <div id="numbersList" class="space-y-2 max-h-96 overflow-y-auto"></div>
@@ -198,8 +198,8 @@
     <div class="admin-card">
         <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-box"></i> Заказы</h2>
         <div class="flex gap-3 mb-4 flex-wrap">
-            <select id="orderStatusFilter" class="w-auto"><option value="">Все</option><option value="new">🆕 Новый</option><option value="processing">⚙️ В обработке</option><option value="paid">💳 Оплачен</option><option value="completed">✅ Выполнен</option></select>
-            <button onclick="filterOrders()" class="bg-blue-600 text-white" style="width: auto; padding: 8px 16px;">Фильтр</button>
+            <select id="orderStatusFilter" class="w-auto"><option value="">Все статусы</option><option value="new">🆕 Новый</option><option value="processing">⚙️ В обработке</option><option value="paid">💳 Оплачен</option><option value="completed">✅ Выполнен</option></select>
+            <button onclick="filterOrders()" class="bg-blue-600 text-white" style="width: auto; padding: 8px 16px;">🔍 Фильтр</button>
         </div>
         <div id="ordersList" class="space-y-3 max-h-96 overflow-y-auto"></div>
     </div>
@@ -208,27 +208,49 @@
 <!-- Промокоды -->
 <div id="promoTab" class="tab-content fade-in">
     <div class="admin-card">
-        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-ticket"></i> Промокоды</h2>
+        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-ticket"></i> Промокоды и скидки</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input type="text" id="promoCode" placeholder="Код">
-            <select id="promoType"><option value="percent">% Скидка</option><option value="fixed">Фикс. скидка (₽)</option></select>
-            <input type="number" id="promoValue" placeholder="Значение">
-            <input type="date" id="promoExpiry">
+            <input type="text" id="promoCode" placeholder="Код промокода (например: SUMMER2024)">
+            <select id="promoType"><option value="percent">Процентная скидка (%)</option><option value="fixed">Фиксированная скидка (₽)</option></select>
+            <input type="number" id="promoValue" placeholder="Значение скидки">
+            <input type="date" id="promoExpiry" placeholder="Дата истечения">
         </div>
-        <button onclick="addPromoCode()">Создать промокод</button>
-        <h3 class="font-bold mt-6 mb-3 gold-text">Активные</h3>
+        <button onclick="addPromoCode()">🎫 Создать промокод</button>
+        <h3 class="font-bold mt-6 mb-3 gold-text">Активные промокоды</h3>
         <div id="promoList" class="space-y-2"></div>
     </div>
 </div>
 
-<!-- Баннеры -->
+<!-- Баннеры (ИСПРАВЛЕНО - работает с основным сайтом!) -->
 <div id="bannerTab" class="tab-content fade-in">
     <div class="admin-card">
-        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-image"></i> Баннеры</h2>
-        <input type="text" id="bannerTitle" placeholder="Заголовок">
-        <input type="text" id="bannerSub" placeholder="Подзаголовок">
-        <button onclick="addBanner()">Добавить баннер</button>
-        <div id="bannerList" class="space-y-3 mt-4"></div>
+        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-image"></i> Управление баннером сайта</h2>
+        
+        <div class="bg-yellow-900/20 p-4 rounded-xl mb-4 border border-yellow-600/30">
+            <p class="text-sm text-yellow-400 mb-2">⚠️ Баннер отображается на ГЛАВНОМ сайте вверху страницы</p>
+        </div>
+        
+        <!-- Текущий баннер -->
+        <div class="bg-white/5 p-3 rounded-lg mb-4">
+            <p class="text-xs text-gray-400">Текущий баннер на сайте:</p>
+            <p id="currentBannerText" class="gold-text font-bold">Загрузка...</p>
+        </div>
+        
+        <!-- Форма создания/редактирования -->
+        <input type="text" id="bannerTitle" placeholder="Заголовок баннера (например: 🔥 СУПЕР АКЦИЯ)" class="mb-3">
+        <input type="text" id="bannerSub" placeholder="Подзаголовок (например: Скидка 50% на золотые номера)" class="mb-3">
+        
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="updateSiteBanner()" class="gold-bg">🚀 Опубликовать на сайте</button>
+            <button onclick="clearSiteBanner()" class="bg-red-600 text-white">🗑️ Убрать баннер</button>
+        </div>
+        
+        <hr class="my-4 border-white/10">
+        
+        <h3 class="font-bold mb-3 gold-text">📚 История баннеров</h3>
+        <div id="bannerList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        
+        <button onclick="saveBannerToHistory()" class="bg-gray-600 text-white mt-3">💾 Сохранить текущий в историю</button>
     </div>
 </div>
 
@@ -236,8 +258,8 @@
 <div id="notifyTab" class="tab-content fade-in">
     <div class="admin-card">
         <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-bell"></i> Уведомления</h2>
-        <textarea id="notificationMessage" rows="4" placeholder="Текст уведомления..." class="mb-4"></textarea>
-        <button onclick="sendNotificationToAll()">Отправить всем</button>
+        <textarea id="notificationMessage" rows="4" placeholder="Текст уведомления для всех пользователей..." class="mb-4"></textarea>
+        <button onclick="sendNotificationToAll()">📢 Отправить всем пользователям</button>
         <div id="notificationsList" class="space-y-2 mt-4 max-h-64 overflow-y-auto"></div>
     </div>
 </div>
@@ -245,11 +267,11 @@
 <!-- Экспорт -->
 <div id="exportTab" class="tab-content fade-in">
     <div class="admin-card">
-        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-download"></i> Экспорт</h2>
+        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-download"></i> Экспорт данных</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button onclick="exportUsers()" class="bg-blue-600">👥 Пользователи</button>
-            <button onclick="exportOrders()" class="bg-green-600">📦 Заказы</button>
-            <button onclick="exportNumbers()" class="bg-purple-600">📱 Номера</button>
+            <button onclick="exportUsers()" class="bg-blue-600 text-white">👥 Экспорт пользователей</button>
+            <button onclick="exportOrders()" class="bg-green-600 text-white">📦 Экспорт заказов</button>
+            <button onclick="exportNumbers()" class="bg-purple-600 text-white">📱 Экспорт номеров</button>
         </div>
     </div>
 </div>
@@ -257,9 +279,9 @@
 <!-- Логи -->
 <div id="logsTab" class="tab-content fade-in">
     <div class="admin-card">
-        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-history"></i> Логи</h2>
+        <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-history"></i> Логи действий администратора</h2>
         <div id="logsList" class="space-y-2 max-h-96 overflow-y-auto"></div>
-        <button onclick="clearLogs()" class="bg-red-600">Очистить</button>
+        <button onclick="clearLogs()" class="bg-red-600 text-white mt-4">🗑️ Очистить логи</button>
     </div>
 </div>
 
@@ -278,7 +300,7 @@
     let allOrders = [];
     let allUsers = [];
     
-    // АВТОРИЗАЦИЯ (РАБОТАЕТ!)
+    // ============ АВТОРИЗАЦИЯ ============
     window.checkAdminLogin = function() {
         const pwd = document.getElementById('adminPassword').value;
         if(pwd === 'admin2024') {
@@ -305,6 +327,7 @@
         loadBanners();
         loadNotifications();
         loadLogs();
+        loadCurrentBanner();
     }
     
     function showTab(tabName) {
@@ -315,7 +338,7 @@
     }
     window.showTab = showTab;
     
-    // СТАТИСТИКА
+    // ============ СТАТИСТИКА ============
     async function loadStats(period) {
         const snapshot = await db.ref('orders').once('value');
         let orders = [];
@@ -361,7 +384,7 @@
     }
     window.loadStats = loadStats;
     
-    // ПОЛЬЗОВАТЕЛИ
+    // ============ ПОЛЬЗОВАТЕЛИ ============
     function loadUsers() {
         db.ref('users').on('value', s => {
             allUsers = [];
@@ -369,6 +392,7 @@
             renderUsers();
         });
     }
+    
     function renderUsers() {
         const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
         const container = document.getElementById('usersList');
@@ -378,10 +402,11 @@
             <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center flex-wrap gap-3">
                 <div class="flex items-center gap-3"><div class="user-avatar">${u.name?.charAt(0)||'U'}</div>
                 <div><p class="font-bold">${u.name||'Без имени'}</p><p class="text-xs">📧 ${u.email||'-'} | 📞 ${u.phone||'-'}</p><p class="text-xs text-gold">📅 ${u.registeredAt||'-'}</p></div></div>
-                <div class="flex gap-2"><button onclick="viewUserOrders('${u.email}')" class="edit-btn">История</button><button onclick="deleteUser('${u.id}')" class="delete-btn">Удалить</button></div>
+                <div class="flex gap-2"><button onclick="viewUserOrders('${u.email}')" class="edit-btn">📜 История</button><button onclick="deleteUser('${u.id}')" class="delete-btn">🗑️ Удалить</button></div>
             </div>
         `).join('');
     }
+    
     window.viewUserOrders = function(email) {
         db.ref('orders').orderByChild('clientEmail').equalTo(email).once('value', s => {
             let msg = '📜 История покупок:\n';
@@ -389,9 +414,10 @@
             alert(msg || 'Нет покупок');
         });
     };
-    window.deleteUser = function(id) { if(confirm('Удалить?')) db.ref(`users/${id}`).remove(); };
     
-    // НОМЕРА
+    window.deleteUser = function(id) { if(confirm('Удалить пользователя?')) db.ref(`users/${id}`).remove(); };
+    
+    // ============ НОМЕРА ============
     function loadNumbers() {
         db.ref('inventory').on('value', s => {
             allNumbers = [];
@@ -399,6 +425,7 @@
             renderNumbers();
         });
     }
+    
     function renderNumbers() {
         const search = document.getElementById('filterNum')?.value.toLowerCase() || '';
         const opFilter = document.getElementById('filterOperator')?.value || '';
@@ -407,31 +434,36 @@
         let filtered = allNumbers.filter(n => n.num?.toLowerCase().includes(search) && (opFilter === '' || n.op === opFilter));
         container.innerHTML = filtered.map(n => `
             <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center flex-wrap gap-2">
-                <div><span class="badge" style="background:#d4af37;">${n.op}</span><span class="badge ml-2" style="background:#3b82f6;">${n.category||'Стандарт'}</span>
-                <p class="font-bold">+7 ${n.num}</p><p class="text-gold">${Number(n.price).toLocaleString()} ₽</p></div>
-                <div class="flex gap-2"><button onclick="editNumber('${n.id}')" class="edit-btn">✏️</button><button onclick="deleteNumber('${n.id}')" class="delete-btn">🗑️</button></div>
+                <div><span class="badge" style="background:#d4af37;color:#000;">${n.op}</span><span class="badge ml-2" style="background:#3b82f6;">${n.category||'Стандарт'}</span>
+                <p class="font-bold text-lg mt-1">+7 ${n.num}</p><p class="text-gold font-bold">${Number(n.price).toLocaleString()} ₽</p></div>
+                <div class="flex gap-2"><button onclick="editNumber('${n.id}')" class="edit-btn">✏️ Редактировать</button><button onclick="deleteNumber('${n.id}')" class="delete-btn">🗑️ Удалить</button></div>
             </div>
         `).join('');
     }
+    
     window.addNumber = function() {
         const num = document.getElementById('newNum').value;
         const price = document.getElementById('newPrice').value;
         const op = document.getElementById('newOp').value;
         const category = document.getElementById('newCategory').value;
-        if(!num || !price) return alert('Заполните поля');
+        if(!num || !price) return alert('Заполните номер и цену');
         db.ref('inventory').push({ num, price, op, category, status: 'active' });
         addLog(`Добавлен номер +7 ${num}`);
         document.getElementById('newNum').value = '';
         document.getElementById('newPrice').value = '';
     };
+    
     window.editNumber = function(id) {
         const item = allNumbers.find(n => n.id === id);
         const newNum = prompt('Новый номер:', item.num);
         const newPrice = prompt('Цена:', item.price);
         if(newNum) db.ref(`inventory/${id}/num`).set(newNum);
         if(newPrice) db.ref(`inventory/${id}/price`).set(newPrice);
+        addLog(`Отредактирован номер ${id}`);
     };
-    window.deleteNumber = function(id) { if(confirm('Удалить?')) db.ref(`inventory/${id}`).remove(); };
+    
+    window.deleteNumber = function(id) { if(confirm('Удалить номер?')) db.ref(`inventory/${id}`).remove(); };
+    
     window.importExcel = function() {
         const file = document.getElementById('excelFile').files[0];
         if(!file) return alert('Выберите файл');
@@ -443,11 +475,12 @@
             const rows = XLSX.utils.sheet_to_json(sheet);
             rows.forEach(row => db.ref('inventory').push({ num: row.номер || row.num, price: row.цена || row.price, op: row.оператор || 'МЕГАФОН', status: 'active' }));
             alert(`Импортировано ${rows.length} номеров`);
+            addLog(`Импортировано ${rows.length} номеров через Excel`);
         };
         reader.readAsArrayBuffer(file);
     };
     
-    // ЗАКАЗЫ
+    // ============ ЗАКАЗЫ ============
     function loadOrders() {
         db.ref('orders').on('value', s => {
             allOrders = [];
@@ -455,12 +488,17 @@
             renderOrders();
         });
     }
+    
     function renderOrders() {
         const statusFilter = document.getElementById('orderStatusFilter')?.value || '';
         const container = document.getElementById('ordersList');
         if(!container) return;
         let filtered = allOrders;
         if(statusFilter) filtered = allOrders.filter(o => o.status === statusFilter);
+        if(filtered.length === 0) {
+            container.innerHTML = '<div class="text-gray-500 text-center py-8">Нет заказов</div>';
+            return;
+        }
         container.innerHTML = filtered.map(o => `
             <div class="bg-white/5 p-4 rounded-xl">
                 <div class="flex justify-between items-start flex-wrap">
@@ -470,10 +508,11 @@
             </div>
         `).join('');
     }
+    
     window.updateOrderStatus = function(id, status) { db.ref(`orders/${id}/status`).set(status); addLog(`Статус заказа ${id} → ${status}`); };
     window.filterOrders = function() { renderOrders(); };
     
-    // ПРОМОКОДЫ
+    // ============ ПРОМОКОДЫ ============
     function loadPromoCodes() {
         db.ref('promocodes').on('value', s => {
             const container = document.getElementById('promoList');
@@ -481,93 +520,75 @@
             container.innerHTML = '';
             s.forEach(c => {
                 const p = c.val();
-                container.innerHTML += `<div class="bg-white/5 p-2 rounded flex justify-between"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'} (до ${p.expiry})</span><button onclick="deletePromo('${c.key}')" class="delete-btn" style="padding: 2px 8px;">🗑️</button></div>`;
+                container.innerHTML += `<div class="bg-white/5 p-2 rounded flex justify-between items-center"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'} ${p.expiry ? '(до '+p.expiry+')' : ''}</span><button onclick="deletePromo('${c.key}')" class="delete-btn" style="padding: 2px 8px;">🗑️</button></div>`;
             });
         });
     }
+    
     window.addPromoCode = function() {
         const code = document.getElementById('promoCode').value;
         const type = document.getElementById('promoType').value;
         const value = document.getElementById('promoValue').value;
         const expiry = document.getElementById('promoExpiry').value;
-        if(!code || !value) return alert('Заполните поля');
+        if(!code || !value) return alert('Заполните код и значение скидки');
         db.ref('promocodes').push({ code, type, value, expiry, uses: 0 });
         addLog(`Создан промокод ${code}`);
+        document.getElementById('promoCode').value = '';
+        document.getElementById('promoValue').value = '';
+        alert('✅ Промокод создан!');
     };
+    
     window.deletePromo = function(id) { db.ref(`promocodes/${id}`).remove(); };
     
-    // БАННЕРЫ
-    function loadBanners() {
-        db.ref('banners').on('value', s => {
-            const container = document.getElementById('bannerList');
-            if(!container) return;
-            container.innerHTML = '';
-            s.forEach(c => {
-                const b = c.val();
-                container.innerHTML += `<div class="bg-white/5 p-2 rounded flex justify-between"><span>${b.title} - ${b.subtitle}</span><button onclick="deleteBanner('${c.key}')" class="delete-btn" style="padding: 2px 8px;">🗑️</button></div>`;
+    // ============ БАННЕРЫ (ИСПРАВЛЕНО - работает с основным сайтом!) ============
+    function loadCurrentBanner() {
+        db.ref('settings/banner').on('value', s => {
+            const banner = s.val();
+            const container = document.getElementById('currentBannerText');
+            if(container) {
+                if(banner && banner.title) {
+                    container.innerHTML = `📢 ${banner.title} — ${banner.sub || ''}`;
+                } else {
+                    container.innerHTML = '❌ Баннер не установлен';
+                }
+            }
+        });
+    }
+    
+    window.updateSiteBanner = function() {
+        const title = document.getElementById('bannerTitle').value.trim();
+        const subtitle = document.getElementById('bannerSub').value.trim();
+        
+        if(!title) {
+            alert('❌ Введите заголовок баннера!');
+            return;
+        }
+        
+        db.ref('settings/banner').set({ 
+            title: title, 
+            sub: subtitle || 'Эксклюзивные номера' 
+        }).then(() => {
+            addLog(`✅ Баннер обновлен на сайте: ${title}`);
+            alert('✅ Баннер успешно опубликован на сайте!');
+            
+            db.ref('banners').push({ 
+                title: title, 
+                subtitle: subtitle,
+                date: new Date().toLocaleString()
             });
+            
+            document.getElementById('bannerTitle').value = '';
+            document.getElementById('bannerSub').value = '';
+            loadCurrentBanner();
+            loadBanners();
+        }).catch(err => {
+            console.error(err);
+            alert('❌ Ошибка при сохранении баннера');
         });
-    }
-    window.addBanner = function() {
-        const title = document.getElementById('bannerTitle').value;
-        const subtitle = document.getElementById('bannerSub').value;
-        if(!title) return alert('Введите заголовок');
-        db.ref('banners').push({ title, subtitle });
-        addLog(`Добавлен баннер: ${title}`);
-    };
-    window.deleteBanner = function(id) { db.ref(`banners/${id}`).remove(); };
-    
-    // УВЕДОМЛЕНИЯ
-    function loadNotifications() {
-        db.ref('notifications').on('value', s => {
-            const container = document.getElementById('notificationsList');
-            if(!container) return;
-            container.innerHTML = '';
-            s.forEach(c => { container.innerHTML += `<div class="bg-white/5 p-2 rounded text-sm">📢 ${c.val().message} (${c.val().date})</div>`; });
-        });
-    }
-    window.sendNotificationToAll = function() {
-        const msg = document.getElementById('notificationMessage').value;
-        if(!msg) return alert('Введите сообщение');
-        db.ref('notifications').push({ message: msg, date: new Date().toLocaleString() });
-        addLog(`Отправлено уведомление: ${msg}`);
-        document.getElementById('notificationMessage').value = '';
-        alert('Уведомление отправлено всем пользователям!');
     };
     
-    // ЭКСПОРТ
-    window.exportUsers = function() {
-        const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone, Дата: u.registeredAt })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Пользователи'); XLSX.writeFile(wb, 'users.xlsx');
-    };
-    window.exportOrders = function() {
-        const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status, Дата: o.date })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Заказы'); XLSX.writeFile(wb, 'orders.xlsx');
-    };
-    window.exportNumbers = function() {
-        const ws = XLSX.utils.json_to_sheet(allNumbers.map(n => ({ Номер: n.num, Цена: n.price, Оператор: n.op, Категория: n.category })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Номера'); XLSX.writeFile(wb, 'numbers.xlsx');
-    };
-    
-    // ЛОГИ
-    function loadLogs() {
-        db.ref('logs').limitToLast(50).on('value', s => {
-            const container = document.getElementById('logsList');
-            if(!container) return;
-            container.innerHTML = '';
-            const logs = [];
-            s.forEach(c => logs.unshift(c.val()));
-            logs.forEach(log => { container.innerHTML += `<div class="bg-white/5 p-2 rounded text-xs"><span class="text-gold">${log.date}</span> - ${log.action}</div>`; });
-        });
-    }
-    window.clearLogs = function() { if(confirm('Очистить все логи?')) db.ref('logs').remove(); };
-    
-    // Фильтры
-    document.getElementById('filterNum')?.addEventListener('input', () => renderNumbers());
-    document.getElementById('filterOperator')?.addEventListener('change', () => renderNumbers());
-    document.getElementById('userSearch')?.addEventListener('input', () => renderUsers());
-    
-    window.showTab = showTab;
-</script>
-</body>
-</html>
+    window.clearSiteBanner = function() {
+        if(confirm('Удалить баннер с главного сайта?')) {
+            db.ref('settings/banner').remove().then(() => {
+                addLog('🗑️ Баннер удален с сайта');
+                alert('✅ Баннер убран с сайта
