@@ -103,6 +103,20 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.4s ease; }
+        
+        /* Стиль для кнопки входа */
+        .login-btn {
+            background: linear-gradient(135deg, #d4af37, #b8921e);
+            color: #000;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(212,175,55,0.4); }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -112,7 +126,7 @@
     <div class="modal-content">
         <h2 class="text-2xl font-bold gold-text mb-4 text-center">🔐 Вход в админку</h2>
         <input type="password" id="adminPassword" placeholder="Введите пароль" class="mb-4">
-        <button onclick="checkAdminLogin()" class="gold-bg text-black font-bold">ВОЙТИ</button>
+        <button class="login-btn" onclick="checkAdminLogin()">ВОЙТИ В АДМИНКУ</button>
         <p class="text-xs text-gray-500 mt-4 text-center">Пароль: <strong class="gold-text">admin2024</strong></p>
     </div>
 </div>
@@ -221,7 +235,7 @@
     </div>
 </div>
 
-<!-- Баннеры (ИСПРАВЛЕНО - работает с основным сайтом!) -->
+<!-- Баннеры -->
 <div id="bannerTab" class="tab-content fade-in">
     <div class="admin-card">
         <h2 class="text-xl font-bold gold-text mb-4"><i class="fas fa-image"></i> Управление баннером сайта</h2>
@@ -230,13 +244,11 @@
             <p class="text-sm text-yellow-400 mb-2">⚠️ Баннер отображается на ГЛАВНОМ сайте вверху страницы</p>
         </div>
         
-        <!-- Текущий баннер -->
         <div class="bg-white/5 p-3 rounded-lg mb-4">
             <p class="text-xs text-gray-400">Текущий баннер на сайте:</p>
             <p id="currentBannerText" class="gold-text font-bold">Загрузка...</p>
         </div>
         
-        <!-- Форма создания/редактирования -->
         <input type="text" id="bannerTitle" placeholder="Заголовок баннера (например: 🔥 СУПЕР АКЦИЯ)" class="mb-3">
         <input type="text" id="bannerSub" placeholder="Подзаголовок (например: Скидка 50% на золотые номера)" class="mb-3">
         
@@ -300,7 +312,7 @@
     let allOrders = [];
     let allUsers = [];
     
-    // ============ АВТОРИЗАЦИЯ ============
+    // ============ АВТОРИЗАЦИЯ (РАБОТАЕТ) ============
     window.checkAdminLogin = function() {
         const pwd = document.getElementById('adminPassword').value;
         if(pwd === 'admin2024') {
@@ -309,10 +321,22 @@
             addLog('✅ Вход в админ-панель');
             initAll();
         } else {
-            alert('❌ Неверный пароль!');
+            alert('❌ Неверный пароль! Попробуйте admin2024');
             addLog('❌ Неудачная попытка входа');
         }
     };
+    
+    // Добавляем возможность войти по Enter
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('adminPassword');
+        if(passwordInput) {
+            passwordInput.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    checkAdminLogin();
+                }
+            });
+        }
+    });
     
     function addLog(action) {
         db.ref('logs').push({ action, date: new Date().toLocaleString() });
@@ -371,10 +395,13 @@
             if(idx !== -1) dailyRev[idx] += parseInt(o.price)||0;
         });
         if(salesChart) salesChart.destroy();
-        salesChart = new Chart(document.getElementById('salesChart'), {
-            type: 'line',
-            data: { labels: days, datasets: [{ label: 'Выручка (₽)', data: dailyRev, borderColor: '#d4af37', fill: true, backgroundColor: 'rgba(212,175,55,0.1)' }] }
-        });
+        const ctx = document.getElementById('salesChart');
+        if(ctx) {
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: days, datasets: [{ label: 'Выручка (₽)', data: dailyRev, borderColor: '#d4af37', fill: true, backgroundColor: 'rgba(212,175,55,0.1)' }] }
+            });
+        }
         
         // Топ номеров
         const top = {};
@@ -451,6 +478,7 @@
         addLog(`Добавлен номер +7 ${num}`);
         document.getElementById('newNum').value = '';
         document.getElementById('newPrice').value = '';
+        alert('✅ Номер добавлен!');
     };
     
     window.editNumber = function(id) {
@@ -540,7 +568,7 @@
     
     window.deletePromo = function(id) { db.ref(`promocodes/${id}`).remove(); };
     
-    // ============ БАННЕРЫ (ИСПРАВЛЕНО - работает с основным сайтом!) ============
+    // ============ БАННЕРЫ ============
     function loadCurrentBanner() {
         db.ref('settings/banner').on('value', s => {
             const banner = s.val();
@@ -558,37 +586,6 @@
     window.updateSiteBanner = function() {
         const title = document.getElementById('bannerTitle').value.trim();
         const subtitle = document.getElementById('bannerSub').value.trim();
-        
-        if(!title) {
-            alert('❌ Введите заголовок баннера!');
-            return;
-        }
-        
-        db.ref('settings/banner').set({ 
-            title: title, 
-            sub: subtitle || 'Эксклюзивные номера' 
-        }).then(() => {
-            addLog(`✅ Баннер обновлен на сайте: ${title}`);
-            alert('✅ Баннер успешно опубликован на сайте!');
-            
-            db.ref('banners').push({ 
-                title: title, 
-                subtitle: subtitle,
-                date: new Date().toLocaleString()
-            });
-            
-            document.getElementById('bannerTitle').value = '';
-            document.getElementById('bannerSub').value = '';
-            loadCurrentBanner();
-            loadBanners();
-        }).catch(err => {
-            console.error(err);
-            alert('❌ Ошибка при сохранении баннера');
-        });
-    };
-    
-    window.clearSiteBanner = function() {
-        if(confirm('Удалить баннер с главного сайта?')) {
-            db.ref('settings/banner').remove().then(() => {
-                addLog('🗑️ Баннер удален с сайта');
-                alert('✅ Баннер убран с сайта
+        if(!title) return alert('❌ Введите заголовок баннера!');
+        db.ref('settings/banner').set({ title: title, sub: subtitle || 'Эксклюзивные номера' }).then(() => {
+            addLog(`✅ Баннер обновлен на
