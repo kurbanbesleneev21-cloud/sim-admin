@@ -12,9 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; }
         
-        /* Боковое меню */
         .sidebar {
             position: fixed;
             left: 0;
@@ -23,8 +22,6 @@
             height: 100vh;
             background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
             border-right: 1px solid rgba(212, 175, 55, 0.3);
-            z-index: 100;
-            transition: all 0.3s;
             overflow-y: auto;
         }
         
@@ -42,10 +39,6 @@
             -webkit-text-fill-color: transparent;
         }
         
-        .sidebar-menu {
-            padding: 20px 0;
-        }
-        
         .menu-item {
             display: flex;
             align-items: center;
@@ -58,41 +51,18 @@
             color: #aaa;
         }
         
-        .menu-item i {
-            width: 24px;
-            font-size: 20px;
-        }
+        .menu-item i { width: 24px; font-size: 20px; }
+        .menu-item:hover { background: rgba(212, 175, 55, 0.1); color: #d4af37; }
+        .menu-item.active { background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05)); color: #d4af37; border-left: 3px solid #d4af37; }
         
-        .menu-item:hover {
-            background: rgba(212, 175, 55, 0.1);
-            color: #d4af37;
-        }
+        .main-content { margin-left: 280px; padding: 30px; min-height: 100vh; }
         
-        .menu-item.active {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
-            color: #d4af37;
-            border-left: 3px solid #d4af37;
-        }
-        
-        /* Основной контент */
-        .main-content {
-            margin-left: 280px;
-            padding: 30px;
-            min-height: 100vh;
-        }
-        
-        /* Карточки */
         .stat-card {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             border: 1px solid rgba(212, 175, 55, 0.2);
             border-radius: 20px;
             padding: 25px;
-            transition: all 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: #d4af37;
+            text-align: center;
         }
         
         .data-card {
@@ -113,7 +83,7 @@
             gap: 10px;
         }
         
-        input, select, textarea {
+        input, select {
             background: #0f0f1a;
             border: 1px solid #2a2a3a;
             color: #fff;
@@ -121,13 +91,9 @@
             border-radius: 12px;
             width: 100%;
             outline: none;
-            transition: all 0.3s;
         }
         
-        input:focus, select:focus, textarea:focus {
-            border-color: #d4af37;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-        }
+        input:focus, select:focus { border-color: #d4af37; }
         
         button {
             background: linear-gradient(135deg, #d4af37, #b8921e);
@@ -140,13 +106,9 @@
             transition: all 0.3s;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
-        }
+        button:hover { transform: translateY(-2px); }
         
         .btn-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; }
-        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
         
         .number-item {
@@ -159,47 +121,25 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            transition: all 0.3s;
             border: 1px solid rgba(255,255,255,0.05);
         }
         
-        .number-item:hover {
-            border-color: rgba(212, 175, 55, 0.3);
-            background: rgba(212, 175, 55, 0.05);
-        }
+        .number-item:hover { border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05); }
         
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-gold { background: #d4af37; color: #000; }
         .badge-blue { background: #3b82f6; color: #fff; }
-        .badge-green { background: #10b981; color: #fff; }
         
-        .modal {
-            display: none;
+        .toast {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
+            bottom: 30px;
+            right: 30px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
             z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: #1a1a2e;
-            border-radius: 24px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid #d4af37;
+            display: none;
         }
         
         .login-container {
@@ -219,43 +159,28 @@
             text-align: center;
         }
         
-        /* Адаптивность */
         @media (max-width: 768px) {
             .sidebar { width: 80px; }
             .sidebar-header h1 { font-size: 0; }
             .sidebar-header h1::before { content: "S"; font-size: 24px; display: block; }
             .menu-item span { display: none; }
-            .menu-item i { margin: 0 auto; }
             .main-content { margin-left: 80px; padding: 20px; }
         }
         
-        /* Скроллбар */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a2e; }
-        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
-        
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #10b981;
-            color: white;
-            padding: 12px 24px;
+        .debug-panel {
+            background: #0f0f1a;
+            border: 1px solid #d4af37;
             border-radius: 12px;
-            z-index: 1000;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
 
-<!-- Модалка входа -->
+<!-- Вход -->
 <div id="loginModal" class="login-container">
     <div class="login-box">
         <h1 class="text-3xl font-bold mb-4" style="color: #d4af37;">🔐 S-MARKET</h1>
@@ -266,51 +191,19 @@
     </div>
 </div>
 
-<!-- Основная админ-панель -->
+<!-- Админ-панель -->
 <div id="adminPanel" style="display: none;">
-    <!-- Боковое меню -->
     <div class="sidebar">
-        <div class="sidebar-header">
-            <h1>S-MARKET PRO</h1>
-            <p class="text-xs text-gray-500 mt-2">Админ-панель</p>
-        </div>
-        <div class="sidebar-menu">
-            <div class="menu-item active" onclick="showSection('dashboard')">
-                <i class="fas fa-chart-line"></i>
-                <span>📊 Дашборд</span>
-            </div>
-            <div class="menu-item" onclick="showSection('numbers')">
-                <i class="fas fa-phone"></i>
-                <span>📱 Номера</span>
-            </div>
-            <div class="menu-item" onclick="showSection('orders')">
-                <i class="fas fa-box"></i>
-                <span>📦 Заказы</span>
-            </div>
-            <div class="menu-item" onclick="showSection('users')">
-                <i class="fas fa-users"></i>
-                <span>👥 Пользователи</span>
-            </div>
-            <div class="menu-item" onclick="showSection('promo')">
-                <i class="fas fa-ticket"></i>
-                <span>🎫 Промокоды</span>
-            </div>
-            <div class="menu-item" onclick="showSection('banner')">
-                <i class="fas fa-image"></i>
-                <span>🖼️ Баннер</span>
-            </div>
-            <div class="menu-item" onclick="showSection('export')">
-                <i class="fas fa-download"></i>
-                <span>📎 Экспорт</span>
-            </div>
-            <div class="menu-item" onclick="showSection('logs')">
-                <i class="fas fa-history"></i>
-                <span>📋 Логи</span>
-            </div>
-        </div>
+        <div class="sidebar-header"><h1>S-MARKET PRO</h1><p class="text-xs text-gray-500 mt-2">Админ-панель</p></div>
+        <div class="menu-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>📊 Дашборд</span></div>
+        <div class="menu-item" onclick="showSection('numbers')"><i class="fas fa-phone"></i><span>📱 Номера</span></div>
+        <div class="menu-item" onclick="showSection('orders')"><i class="fas fa-box"></i><span>📦 Заказы</span></div>
+        <div class="menu-item" onclick="showSection('users')"><i class="fas fa-users"></i><span>👥 Пользователи</span></div>
+        <div class="menu-item" onclick="showSection('promo')"><i class="fas fa-ticket"></i><span>🎫 Промокоды</span></div>
+        <div class="menu-item" onclick="showSection('banner')"><i class="fas fa-image"></i><span>🖼️ Баннер</span></div>
+        <div class="menu-item" onclick="showSection('export')"><i class="fas fa-download"></i><span>📎 Экспорт</span></div>
     </div>
     
-    <!-- Основной контент -->
     <div class="main-content">
         <!-- Дашборд -->
         <div id="dashboardSection" class="section">
@@ -321,145 +214,51 @@
                 <div class="stat-card"><i class="fas fa-users text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Пользователей</p><p id="totalUsers" class="text-2xl font-bold" style="color: #d4af37;">0</p></div>
                 <div class="stat-card"><i class="fas fa-chart-simple text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Новых за неделю</p><p id="newOrdersWeek" class="text-2xl font-bold" style="color: #d4af37;">0</p></div>
             </div>
-            <div class="data-card">
-                <canvas id="salesChart" height="200"></canvas>
-            </div>
-            <div class="data-card">
-                <h2><i class="fas fa-trophy"></i> Топ продаваемых номеров</h2>
-                <div id="topNumbers" class="space-y-2"></div>
-            </div>
+            <div class="data-card"><canvas id="salesChart" height="200"></canvas></div>
         </div>
         
-        <!-- Номера -->
+        <!-- Номера (с отладкой) -->
         <div id="numbersSection" class="section" style="display: none;">
             <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📱 Управление номерами</h1>
+            
+            <!-- Отладочная панель -->
+            <div class="debug-panel" id="debugPanel">
+                🔍 Статус: Проверка подключения к Firebase...
+            </div>
             
             <div class="data-card">
                 <h2><i class="fas fa-plus-circle"></i> Добавить новый номер</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <input type="text" id="newNum" placeholder="Номер (964-274-80-80)">
                     <input type="number" id="newPrice" placeholder="Цена">
-                    <select id="newOp">
-                        <option value="МЕГАФОН">МЕГАФОН</option>
-                        <option value="БИЛАЙН">БИЛАЙН</option>
-                        <option value="МТС">МТС</option>
-                        <option value="TELE2">TELE2</option>
-                    </select>
-                    <select id="newCategory">
-                        <option value="Золотой">Золотой</option>
-                        <option value="Платиновый">Платиновый</option>
-                        <option value="VIP">VIP</option>
-                        <option value="Стандарт">Стандарт</option>
-                    </select>
+                    <select id="newOp"><option>МЕГАФОН</option><option>БИЛАЙН</option><option>МТС</option><option>TELE2</option></select>
+                    <select id="newCategory"><option>Золотой</option><option>Платиновый</option><option>VIP</option></select>
                 </div>
-                <button onclick="addNumber()">➕ Добавить номер на сайт</button>
+                <button onclick="addNumber()">➕ Добавить номер</button>
             </div>
             
             <div class="data-card">
                 <h2><i class="fas fa-filter"></i> Фильтрация</h2>
                 <div class="flex gap-4 flex-wrap">
                     <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
-                    <select id="filterOperator" class="w-auto">
-                        <option value="">Все операторы</option>
-                        <option value="МЕГАФОН">МЕГАФОН</option>
-                        <option value="БИЛАЙН">БИЛАЙН</option>
-                        <option value="МТС">МТС</option>
-                        <option value="TELE2">TELE2</option>
-                    </select>
-                    <button onclick="refreshNumbers()" class="btn-info" style="width: auto;">🔄 Обновить</button>
+                    <select id="filterOperator" class="w-auto"><option value="">Все операторы</option><option>МЕГАФОН</option><option>БИЛАЙН</option><option>МТС</option></select>
+                    <button onclick="forceLoadNumbers()" class="btn-info" style="width: auto;">🔄 Принудительно обновить</button>
+                    <button onclick="createTestNumbers()" class="btn-info" style="width: auto; background:#f59e0b;">📝 Создать тестовые номера</button>
                 </div>
             </div>
             
             <div class="data-card">
-                <h2><i class="fas fa-list"></i> Список номеров</h2>
+                <h2><i class="fas fa-list"></i> Список номеров (<span id="numbersCount">0</span>)</h2>
                 <div id="numbersList" class="max-h-96 overflow-auto"></div>
             </div>
         </div>
         
-        <!-- Заказы -->
-        <div id="ordersSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📦 Управление заказами</h1>
-            <div class="data-card">
-                <h2><i class="fas fa-filter"></i> Фильтр по статусу</h2>
-                <select id="orderStatusFilter" class="w-auto mb-4">
-                    <option value="">Все статусы</option>
-                    <option value="new">🆕 Новый</option>
-                    <option value="processing">⚙️ В обработке</option>
-                    <option value="paid">💳 Оплачен</option>
-                    <option value="completed">✅ Выполнен</option>
-                </select>
-                <div id="ordersList" class="space-y-3 max-h-96 overflow-auto"></div>
-            </div>
-        </div>
-        
-        <!-- Пользователи -->
-        <div id="usersSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">👥 Управление пользователями</h1>
-            <div class="data-card">
-                <h2><i class="fas fa-search"></i> Поиск</h2>
-                <input type="text" id="userSearch" placeholder="Поиск по имени или email...">
-                <div id="usersList" class="mt-4 space-y-3 max-h-96 overflow-auto"></div>
-            </div>
-        </div>
-        
-        <!-- Промокоды -->
-        <div id="promoSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">🎫 Промокоды и скидки</h1>
-            <div class="data-card">
-                <h2><i class="fas fa-plus-circle"></i> Создать промокод</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <input type="text" id="promoCode" placeholder="Код промокода">
-                    <select id="promoType">
-                        <option value="percent">Процентная скидка (%)</option>
-                        <option value="fixed">Фиксированная скидка (₽)</option>
-                    </select>
-                    <input type="number" id="promoValue" placeholder="Значение скидки">
-                    <input type="date" id="promoExpiry">
-                </div>
-                <button onclick="addPromoCode()">🎫 Создать промокод</button>
-            </div>
-            <div class="data-card">
-                <h2><i class="fas fa-list"></i> Активные промокоды</h2>
-                <div id="promoList" class="space-y-2"></div>
-            </div>
-        </div>
-        
-        <!-- Баннер -->
-        <div id="bannerSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">🖼️ Баннер на сайте</h1>
-            <div class="data-card">
-                <div class="bg-yellow-900/20 p-4 rounded-xl mb-4">
-                    <p class="text-sm">Текущий баннер: <span id="currentBannerText" class="gold font-bold">—</span></p>
-                </div>
-                <input type="text" id="bannerTitle" placeholder="Заголовок баннера" class="mb-3">
-                <input type="text" id="bannerSub" placeholder="Подзаголовок" class="mb-4">
-                <div class="flex gap-3">
-                    <button onclick="updateBanner()">🚀 Опубликовать</button>
-                    <button onclick="clearBanner()" class="btn-danger">🗑️ Убрать баннер</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Экспорт -->
-        <div id="exportSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📎 Экспорт данных</h1>
-            <div class="data-card">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button onclick="exportUsers()" class="btn-info">👥 Экспорт пользователей</button>
-                    <button onclick="exportOrders()" class="btn-info">📦 Экспорт заказов</button>
-                    <button onclick="exportNumbers()" class="btn-info">📱 Экспорт номеров</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Логи -->
-        <div id="logsSection" class="section" style="display: none;">
-            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📋 Логи действий</h1>
-            <div class="data-card">
-                <div id="logsList" class="space-y-2 max-h-96 overflow-auto"></div>
-                <button onclick="clearLogs()" class="btn-danger mt-4">🗑️ Очистить логи</button>
-            </div>
-        </div>
+        <!-- Остальные секции (упрощенно) -->
+        <div id="ordersSection" class="section" style="display: none;"><div class="data-card"><h2>📦 Заказы</h2><div id="ordersList"></div></div></div>
+        <div id="usersSection" class="section" style="display: none;"><div class="data-card"><h2>👥 Пользователи</h2><input type="text" id="userSearch" placeholder="Поиск..."><div id="usersList" class="mt-4"></div></div></div>
+        <div id="promoSection" class="section" style="display: none;"><div class="data-card"><h2>🎫 Промокоды</h2><div class="grid grid-cols-2 gap-3 mb-4"><input type="text" id="promoCode" placeholder="Код"><select id="promoType"><option value="percent">%</option><option value="fixed">₽</option></select><input type="number" id="promoValue" placeholder="Значение"><input type="date" id="promoExpiry"></div><button onclick="addPromoCode()">Создать</button><div id="promoList" class="mt-4"></div></div></div>
+        <div id="bannerSection" class="section" style="display: none;"><div class="data-card"><h2>🖼️ Баннер</h2><input type="text" id="bannerTitle" placeholder="Заголовок"><input type="text" id="bannerSub" placeholder="Подзаголовок" class="mt-3"><button onclick="updateBanner()" class="mt-4">Опубликовать</button></div></div>
+        <div id="exportSection" class="section" style="display: none;"><div class="data-card"><h2>📎 Экспорт</h2><div class="grid grid-cols-3 gap-3"><button onclick="exportUsers()" class="btn-info">Пользователи</button><button onclick="exportOrders()" class="btn-info">Заказы</button><button onclick="exportNumbers()" class="btn-info">Номера</button></div></div></div>
     </div>
 </div>
 
@@ -472,59 +271,81 @@
     });
     const db = firebase.database();
     
-    let salesChart = null;
     let allNumbers = [];
     let allOrders = [];
     let allUsers = [];
+    let salesChart = null;
     
     // Вход
     window.checkLogin = function() {
-        const pwd = document.getElementById('adminPassword').value;
-        if(pwd === 'admin2024') {
+        if(document.getElementById('adminPassword').value === 'admin2024') {
             document.getElementById('loginModal').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            addLog('✅ Вход в админ-панель');
             initAll();
-        } else {
-            alert('❌ Неверный пароль! Пароль: admin2024');
-            addLog('❌ Неудачная попытка входа');
-        }
+        } else { alert('Неверный пароль!'); }
     };
     
-    document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
-        if(e.key === 'Enter') checkLogin();
-    });
+    document.getElementById('adminPassword')?.addEventListener('keypress', function(e) { if(e.key === 'Enter') checkLogin(); });
     
-    function addLog(action) { db.ref('logs').push({ action, date: new Date().toLocaleString() }); }
-    function showToast(msg, isError = false) {
+    function showToast(msg) {
         const toast = document.getElementById('toast');
         toast.innerText = msg;
-        toast.style.background = isError ? '#dc2626' : '#10b981';
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
     
-    function initAll() { loadStats(); loadUsers(); loadNumbers(); loadOrders(); loadPromoCodes(); loadCurrentBanner(); loadLogs(); }
+    // Принудительная загрузка номеров
+    window.forceLoadNumbers = function() { loadNumbers(); showToast('🔄 Обновление...'); };
     
-    // Переключение секций
-    window.showSection = function(section) {
-        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-        document.getElementById(section + 'Section').style.display = 'block';
-        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        if(section === 'numbers') refreshNumbers();
-        if(section === 'dashboard') loadStats();
+    // Создание тестовых номеров
+    window.createTestNumbers = function() {
+        const testNumbers = [
+            { num: "964-274-80-80", price: 800, op: "БИЛАЙН", category: "Золотой" },
+            { num: "999-999-43-40", price: 3000, op: "МЕГАФОН", category: "Платиновый" },
+            { num: "925-123-45-67", price: 1500, op: "МТС", category: "VIP" },
+            { num: "903-888-77-66", price: 2500, op: "TELE2", category: "Золотой" }
+        ];
+        
+        testNumbers.forEach(item => {
+            db.ref('inventory').push(item);
+        });
+        showToast('✅ Создано 4 тестовых номера!');
+        setTimeout(() => loadNumbers(), 1000);
     };
     
     // Загрузка номеров
     function loadNumbers() {
-        db.ref('inventory').on('value', (snapshot) => {
+        const debugPanel = document.getElementById('debugPanel');
+        debugPanel.innerHTML = '🔄 Загрузка номеров из Firebase...';
+        
+        db.ref('inventory').once('value').then(snapshot => {
             allNumbers = [];
             const data = snapshot.val();
-            if(data) { Object.keys(data).forEach(key => { allNumbers.push({ id: key, ...data[key] }); }); }
+            
+            if(data && Object.keys(data).length > 0) {
+                Object.keys(data).forEach(key => {
+                    allNumbers.push({ id: key, ...data[key] });
+                });
+                debugPanel.innerHTML = `✅ УСПЕХ! Загружено номеров: ${allNumbers.length} шт.`;
+                debugPanel.style.background = 'rgba(16,185,129,0.2)';
+            } else {
+                debugPanel.innerHTML = '⚠️ В Firebase НЕТ НОМЕРОВ! Нажмите "Создать тестовые номера"';
+                debugPanel.style.background = 'rgba(245,158,11,0.2)';
+            }
+            
+            document.getElementById('numbersCount').innerText = allNumbers.length;
             renderNumbers();
-            console.log('Загружено номеров:', allNumbers.length);
+            loadStats();
+        }).catch(error => {
+            debugPanel.innerHTML = `❌ ОШИБКА: ${error.message}`;
+            debugPanel.style.background = 'rgba(220,38,38,0.2)';
+            console.error('Ошибка Firebase:', error);
         });
+        
+        // Также слушаем изменения
+        db.ref('inventory').on('child_added', () => loadNumbers());
+        db.ref('inventory').on('child_removed', () => loadNumbers());
+        db.ref('inventory').on('child_changed', () => loadNumbers());
     }
     
     function renderNumbers() {
@@ -532,8 +353,18 @@
         const opFilter = document.getElementById('filterOperator')?.value || '';
         const container = document.getElementById('numbersList');
         if(!container) return;
-        let filtered = allNumbers.filter(n => n.num?.toLowerCase().includes(search) && (opFilter === '' || n.op === opFilter));
-        if(filtered.length === 0) { container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров</div>'; return; }
+        
+        let filtered = allNumbers.filter(n => {
+            const numMatch = n.num?.toLowerCase().includes(search);
+            const opMatch = opFilter === '' || n.op === opFilter;
+            return numMatch && opMatch;
+        });
+        
+        if(filtered.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров. Нажмите "Создать тестовые номера"</div>';
+            return;
+        }
+        
         container.innerHTML = filtered.map(n => `
             <div class="number-item">
                 <div>
@@ -541,17 +372,14 @@
                     <span class="badge badge-blue ml-2">${n.category || 'Стандарт'}</span>
                     <p class="text-xl font-bold mt-2">+7 ${n.num}</p>
                     <p class="text-2xl font-bold" style="color: #d4af37;">${Number(n.price).toLocaleString()} ₽</p>
-                    <p class="text-xs text-gray-500 mt-1">ID: ${n.id?.slice(0,8)}...</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="editNumber('${n.id}')" class="btn-info" style="padding: 8px 16px;">✏️ Редактировать</button>
+                    <button onclick="editNumber('${n.id}')" class="btn-info" style="padding: 8px 16px;">✏️ Ред.</button>
                     <button onclick="deleteNumber('${n.id}')" class="btn-danger" style="padding: 8px 16px;">🗑️ Удалить</button>
                 </div>
             </div>
         `).join('');
     }
-    
-    window.refreshNumbers = function() { loadNumbers(); showToast('🔄 Список обновлен'); };
     
     window.addNumber = function() {
         const num = document.getElementById('newNum').value.trim();
@@ -560,11 +388,11 @@
         const category = document.getElementById('newCategory').value;
         if(!num) { alert('Введите номер!'); return; }
         if(!price || price <= 0) { alert('Введите цену!'); return; }
+        
         db.ref('inventory').push({ num, price: parseInt(price), op, category, status: 'active', createdAt: new Date().toLocaleString() }).then(() => {
             showToast(`✅ Номер +7 ${num} добавлен`);
             document.getElementById('newNum').value = '';
             document.getElementById('newPrice').value = '';
-            addLog(`Добавлен номер +7 ${num}`);
         });
     };
     
@@ -586,72 +414,44 @@
         const revenue = orders.reduce((s,o) => s + (parseInt(o.price)||0), 0);
         document.getElementById('totalRevenue').innerText = revenue.toLocaleString() + ' ₽';
         document.getElementById('totalOrders').innerText = orders.length;
+        
         const usersSnap = await db.ref('users').once('value');
         let uc = 0; usersSnap.forEach(() => uc++);
         document.getElementById('totalUsers').innerText = uc;
+        
         let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
         document.getElementById('newOrdersWeek').innerText = orders.filter(o => new Date(o.date) > weekAgo).length;
         
-        const days = [], dailyRev = [];
-        for(let i=6; i>=0; i--) { let d = new Date(); d.setDate(d.getDate()-i); days.push(d.toLocaleDateString()); dailyRev.push(0); }
-        orders.forEach(o => { let d = new Date(o.date).toLocaleDateString(); let idx = days.indexOf(d); if(idx !== -1) dailyRev[idx] += parseInt(o.price)||0; });
         if(salesChart) salesChart.destroy();
         const ctx = document.getElementById('salesChart');
-        if(ctx) salesChart = new Chart(ctx, { type: 'line', data: { labels: days, datasets: [{ label: 'Выручка (₽)', data: dailyRev, borderColor: '#d4af37', fill: true, backgroundColor: 'rgba(212,175,55,0.1)' }] } });
-        
-        const top = {};
-        orders.forEach(o => { top[o.item] = (top[o.item]||0) + 1; });
-        const topArr = Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        document.getElementById('topNumbers').innerHTML = topArr.map(([num, cnt]) => `<div class="bg-white/5 p-3 rounded">📱 +7 ${num} — продано ${cnt} раз</div>`).join('');
+        if(ctx) salesChart = new Chart(ctx, { type: 'line', data: { labels: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'], datasets: [{ label: 'Продажи', data: [0,0,0,0,0,0,0], borderColor: '#d4af37' }] } });
     }
     
-    // Пользователи
+    // Остальные функции
     function loadUsers() { db.ref('users').on('value', s => { allUsers = []; s.forEach(c => allUsers.push({ id: c.key, ...c.val() })); renderUsers(); }); }
-    function renderUsers() {
-        const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
-        const container = document.getElementById('usersList');
-        if(!container) return;
-        let filtered = allUsers.filter(u => u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search));
-        container.innerHTML = filtered.map(u => `<div class="bg-white/5 p-4 rounded-lg flex justify-between items-center flex-wrap gap-3"><div><p class="font-bold">${u.name || 'Без имени'}</p><p class="text-sm">📧 ${u.email || '-'} | 📞 ${u.phone || '-'}</p><p class="text-xs text-gray-400">📅 ${u.registeredAt || '-'}</p></div><button onclick="deleteUser('${u.id}')" class="btn-danger" style="padding: 6px 12px;">Удалить</button></div>`).join('');
-    }
-    window.deleteUser = function(id) { if(confirm('Удалить пользователя?')) db.ref(`users/${id}`).remove(); };
+    function renderUsers() { const container = document.getElementById('usersList'); if(!container) return; container.innerHTML = allUsers.map(u => `<div class="bg-white/5 p-3 rounded mb-2">${u.name || 'Без имени'} - ${u.email || '-'}</div>`).join(''); }
+    function loadOrders() { db.ref('orders').on('value', s => { allOrders = []; s.forEach(c => allOrders.push(c.val())); renderOrders(); }); }
+    function renderOrders() { const container = document.getElementById('ordersList'); if(!container) return; container.innerHTML = allOrders.map(o => `<div class="bg-white/5 p-3 rounded mb-2">${o.name} - +7 ${o.item} - ${o.price}₽</div>`).join(''); }
+    function loadPromoCodes() { db.ref('promocodes').on('value', s => { const container = document.getElementById('promoList'); if(!container) return; container.innerHTML = ''; s.forEach(c => { const p = c.val(); container.innerHTML += `<div class="bg-white/5 p-2 rounded">${p.code} - ${p.value}${p.type==='percent'?'%':'₽'}</div>`; }); }); }
+    window.addPromoCode = function() { const code = document.getElementById('promoCode').value, type = document.getElementById('promoType').value, value = document.getElementById('promoValue').value; if(code && value) db.ref('promocodes').push({ code, type, value }); };
+    window.updateBanner = function() { const title = document.getElementById('bannerTitle').value, sub = document.getElementById('bannerSub').value; if(title) db.ref('settings/banner').set({ title, sub }); };
+    window.exportUsers = function() { const ws = XLSX.utils.json_to_sheet(allUsers); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Users'); XLSX.writeFile(wb, 'users.xlsx'); };
+    window.exportOrders = function() { const ws = XLSX.utils.json_to_sheet(allOrders); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Orders'); XLSX.writeFile(wb, 'orders.xlsx'); };
+    window.exportNumbers = function() { const ws = XLSX.utils.json_to_sheet(allNumbers); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Numbers'); XLSX.writeFile(wb, 'numbers.xlsx'); };
     
-    // Заказы
-    function loadOrders() { db.ref('orders').on('value', s => { allOrders = []; s.forEach(c => allOrders.push({ id: c.key, ...c.val() })); renderOrders(); loadStats(); }); }
-    function renderOrders() {
-        const statusFilter = document.getElementById('orderStatusFilter')?.value || '';
-        const container = document.getElementById('ordersList');
-        if(!container) return;
-        let filtered = statusFilter ? allOrders.filter(o => o.status === statusFilter) : allOrders;
-        if(filtered.length === 0) { container.innerHTML = '<div class="text-center text-gray-500 py-8">Нет заказов</div>'; return; }
-        container.innerHTML = filtered.map(o => `<div class="bg-white/5 p-4 rounded-lg"><div class="flex justify-between flex-wrap gap-3"><div><p class="font-bold gold">${o.name}</p><p>📞 ${o.phone}</p><p>🎁 +7 ${o.item}</p><p class="gold font-bold">💰 ${Number(o.price).toLocaleString()} ₽</p><p class="text-xs text-gray-400">📅 ${o.date || ''}</p></div><div><select onchange="updateStatus('${o.id}', this.value)" class="bg-gray-800 p-2 rounded"><option value="new" ${o.status==='new'?'selected':''}>🆕 Новый</option><option value="processing" ${o.status==='processing'?'selected':''}>⚙️ В обработке</option><option value="paid" ${o.status==='paid'?'selected':''}>💳 Оплачен</option><option value="completed" ${o.status==='completed'?'selected':''}>✅ Выполнен</option></select></div></div></div>`).join('');
-    }
-    window.updateStatus = function(id, status) { db.ref(`orders/${id}/status`).set(status); showToast('✅ Статус обновлен'); };
+    function initAll() { loadNumbers(); loadUsers(); loadOrders(); loadPromoCodes(); loadStats(); }
     
-    // Промокоды
-    function loadPromoCodes() { db.ref('promocodes').on('value', s => { const container = document.getElementById('promoList'); if(!container) return; container.innerHTML = ''; s.forEach(c => { const p = c.val(); container.innerHTML += `<div class="bg-white/5 p-3 rounded flex justify-between items-center"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'}</span><button onclick="deletePromo('${c.key}')" class="btn-danger" style="padding: 4px 12px;">Удалить</button></div>`; }); }); }
-    window.addPromoCode = function() { const code = document.getElementById('promoCode').value, type = document.getElementById('promoType').value, value = document.getElementById('promoValue').value; if(!code || !value) return alert('Заполните поля'); db.ref('promocodes').push({ code, type, value }); showToast(`✅ Промокод ${code} создан`); document.getElementById('promoCode').value = ''; document.getElementById('promoValue').value = ''; };
-    window.deletePromo = function(id) { db.ref(`promocodes/${id}`).remove(); };
+    window.showSection = function(section) {
+        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+        document.getElementById(section + 'Section').style.display = 'block';
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        if(section === 'numbers') forceLoadNumbers();
+    };
     
-    // Баннер
-    function loadCurrentBanner() { db.ref('settings/banner').on('value', s => { const banner = s.val(); const el = document.getElementById('currentBannerText'); if(el) el.innerText = banner?.title ? `${banner.title} - ${banner.sub || ''}` : 'Не установлен'; }); }
-    window.updateBanner = function() { const title = document.getElementById('bannerTitle').value, sub = document.getElementById('bannerSub').value; if(!title) return alert('Введите заголовок'); db.ref('settings/banner').set({ title, sub }); showToast('✅ Баннер обновлен'); document.getElementById('bannerTitle').value = ''; document.getElementById('bannerSub').value = ''; };
-    window.clearBanner = function() { if(confirm('Убрать баннер?')) db.ref('settings/banner').remove(); };
-    
-    // Экспорт
-    window.exportUsers = function() { const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Пользователи'); XLSX.writeFile(wb, 'users.xlsx'); showToast('✅ Экспорт выполнен'); };
-    window.exportOrders = function() { const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Заказы'); XLSX.writeFile(wb, 'orders.xlsx'); };
-    window.exportNumbers = function() { const ws = XLSX.utils.json_to_sheet(allNumbers.map(n => ({ Номер: n.num, Цена: n.price, Оператор: n.op, Категория: n.category }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Номера'); XLSX.writeFile(wb, 'numbers.xlsx'); };
-    
-    // Логи
-    function loadLogs() { db.ref('logs').limitToLast(50).on('value', s => { const container = document.getElementById('logsList'); if(!container) return; container.innerHTML = ''; const logs = []; s.forEach(c => logs.unshift(c.val())); logs.forEach(log => { container.innerHTML += `<div class="bg-white/5 p-2 rounded text-sm"><span class="gold">${log.date}</span> - ${log.action}</div>`; }); }); }
-    window.clearLogs = function() { if(confirm('Очистить все логи?')) db.ref('logs').remove(); };
-    
-    // Фильтры
     document.getElementById('filterNum')?.addEventListener('input', () => renderNumbers());
     document.getElementById('filterOperator')?.addEventListener('change', () => renderNumbers());
     document.getElementById('userSearch')?.addEventListener('input', () => renderUsers());
-    document.getElementById('orderStatusFilter')?.addEventListener('change', () => renderOrders());
 </script>
 </body>
 </html>
