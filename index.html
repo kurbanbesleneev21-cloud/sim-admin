@@ -28,6 +28,8 @@
         .login-box input { margin-bottom: 20px; }
         .login-btn { background: #d4af37; color: #000; padding: 15px; font-size: 18px; }
         .success-msg { background: #10b981; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-top: 10px; display: none; }
+        .number-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .debug-info { background: #1a1a2e; border: 1px solid #d4af37; border-radius: 10px; padding: 10px; margin-bottom: 15px; font-family: monospace; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -44,7 +46,7 @@
 <!-- АДМИН-ПАНЕЛЬ -->
 <div id="adminPanel" style="display: none; padding: 20px;">
     <h1 class="text-3xl font-bold gold mb-2 text-center">✨ S-MARKET Админ-панель</h1>
-    <p class="text-center text-gray-500 mb-6">Управление магазином</p>
+    <p class="text-center text-gray-500 mb-6">Полное управление магазином</p>
     
     <!-- Вкладки -->
     <div class="flex flex-wrap mb-6">
@@ -57,7 +59,6 @@
         <div class="tab" onclick="showTab('export')">📎 Экспорт</div>
     </div>
     
-    <!-- Сообщение об успехе -->
     <div id="successMsg" class="success-msg"></div>
     
     <!-- Статистика -->
@@ -85,15 +86,21 @@
         </div>
     </div>
     
-    <!-- Номера (ИСПРАВЛЕНО) -->
+    <!-- Номера (ИСПРАВЛЕНО - показывает все номера с сайта) -->
     <div id="numbersTab" class="tab-content">
         <div class="card">
             <h2 class="text-xl font-bold gold mb-4">📱 Управление номерами</h2>
             
-            <div class="bg-green-900/20 p-3 rounded mb-4">
-                <p class="text-sm text-green-400">✅ Номера добавляются и сразу отображаются на основном сайте!</p>
+            <!-- Отладочная информация -->
+            <div class="debug-info" id="debugInfo">
+                🔍 Загрузка номеров...
             </div>
             
+            <div class="bg-green-900/20 p-3 rounded mb-4">
+                <p class="text-sm text-green-400">✅ Здесь отображаются ВСЕ номера, которые есть на сайте!</p>
+            </div>
+            
+            <!-- Форма добавления -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
                 <input type="text" id="newNum" placeholder="Номер (например: 964-274-80-80)">
                 <input type="number" id="newPrice" placeholder="Цена (например: 800)">
@@ -107,23 +114,25 @@
                     <option value="Золотой">Золотой</option>
                     <option value="Платиновый">Платиновый</option>
                     <option value="VIP">VIP</option>
-                    <option value="Стандарт">Стандарт</option>
                 </select>
             </div>
             <button onclick="addNumber()">➕ Добавить номер на сайт</button>
             
-            <div class="mt-6">
-                <div class="flex gap-3 mb-4">
-                    <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
-                    <select id="filterOperator" class="w-auto">
-                        <option value="">Все операторы</option>
-                        <option value="МЕГАФОН">МЕГАФОН</option>
-                        <option value="БИЛАЙН">БИЛАЙН</option>
-                        <option value="МТС">МТС</option>
-                    </select>
-                </div>
-                <div id="numbersList" class="space-y-2 max-h-96 overflow-auto"></div>
+            <!-- Фильтры -->
+            <div class="flex gap-3 mt-6 mb-4">
+                <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
+                <select id="filterOperator" class="w-auto">
+                    <option value="">Все операторы</option>
+                    <option value="МЕГАФОН">МЕГАФОН</option>
+                    <option value="БИЛАЙН">БИЛАЙН</option>
+                    <option value="МТС">МТС</option>
+                    <option value="TELE2">TELE2</option>
+                </select>
+                <button onclick="refreshNumbers()" class="bg-blue-600 text-white" style="width: auto; padding: 8px 16px;">🔄 Обновить</button>
             </div>
+            
+            <!-- Список номеров -->
+            <div id="numbersList" class="space-y-2 max-h-96 overflow-auto"></div>
         </div>
     </div>
     
@@ -238,6 +247,140 @@
         event.target.classList.add('active');
     }
     
+    // ============ ЗАГРУЗКА НОМЕРОВ (ПРЯМО ИЗ FIREBASE) ============
+    function loadNumbers() {
+        const debugDiv = document.getElementById('debugInfo');
+        debugDiv.innerHTML = '🔄 Загрузка номеров из Firebase...';
+        
+        db.ref('inventory').on('value', (snapshot) => {
+            allNumbers = [];
+            const data = snapshot.val();
+            
+            if(data) {
+                // Получаем все номера из Firebase
+                Object.keys(data).forEach(key => {
+                    allNumbers.push({ 
+                        id: key, 
+                        ...data[key] 
+                    });
+                });
+                debugDiv.innerHTML = `✅ Загружено номеров: ${allNumbers.length} шт.`;
+                debugDiv.style.background = 'rgba(16,185,129,0.2)';
+            } else {
+                debugDiv.innerHTML = '⚠️ В базе данных нет номеров. Добавьте первый номер!';
+                debugDiv.style.background = 'rgba(245,158,11,0.2)';
+            }
+            
+            renderNumbers();
+            console.log('📱 Загружены номера:', allNumbers);
+        }, (error) => {
+            debugDiv.innerHTML = '❌ Ошибка загрузки: ' + error.message;
+            debugDiv.style.background = 'rgba(220,38,38,0.2)';
+            console.error('Ошибка загрузки номеров:', error);
+        });
+    }
+    
+    function renderNumbers() {
+        const search = document.getElementById('filterNum')?.value.toLowerCase() || '';
+        const opFilter = document.getElementById('filterOperator')?.value || '';
+        const container = document.getElementById('numbersList');
+        if(!container) return;
+        
+        let filtered = allNumbers.filter(n => {
+            const numMatch = n.num?.toLowerCase().includes(search);
+            const opMatch = opFilter === '' || n.op === opFilter;
+            return numMatch && opMatch;
+        });
+        
+        if(filtered.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров. Добавьте первый!</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(n => `
+            <div class="number-card">
+                <div>
+                    <span class="gold font-bold">${n.op || '?'}</span>
+                    <span class="text-sm text-gray-400 ml-2">${n.category || 'Стандарт'}</span>
+                    <p class="text-lg font-bold mt-1">+7 ${n.num}</p>
+                    <p class="gold font-bold">${Number(n.price).toLocaleString()} ₽</p>
+                    <p class="text-xs text-gray-500">ID: ${n.id?.slice(0,8)}...</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="editNumber('${n.id}')" class="edit-btn">✏️ Ред.</button>
+                    <button onclick="deleteNumber('${n.id}')" class="delete-btn">🗑️ Удалить</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Обновить список номеров вручную
+    window.refreshNumbers = function() {
+        showSuccessMsg('🔄 Обновление списка...');
+        loadNumbers();
+    };
+    
+    // Добавление номера
+    window.addNumber = function() {
+        const num = document.getElementById('newNum').value.trim();
+        const price = document.getElementById('newPrice').value;
+        const op = document.getElementById('newOp').value;
+        const category = document.getElementById('newCategory').value;
+        
+        if(!num) {
+            alert('❌ Введите номер!');
+            return;
+        }
+        if(!price || price <= 0) {
+            alert('❌ Введите корректную цену!');
+            return;
+        }
+        
+        const newNumber = {
+            num: num,
+            price: parseInt(price),
+            op: op,
+            category: category,
+            status: 'active',
+            createdAt: new Date().toLocaleString()
+        };
+        
+        db.ref('inventory').push(newNumber).then(() => {
+            showSuccessMsg(`✅ Номер +7 ${num} добавлен на сайт!`);
+            document.getElementById('newNum').value = '';
+            document.getElementById('newPrice').value = '';
+            // Не нужно вызывать loadNumbers - сработает on('value')
+        }).catch(err => {
+            alert('❌ Ошибка при добавлении: ' + err.message);
+        });
+    };
+    
+    // Редактирование номера
+    window.editNumber = function(id) {
+        const item = allNumbers.find(n => n.id === id);
+        if(!item) return;
+        
+        const newPrice = prompt('Новая цена (в рублях):', item.price);
+        if(newPrice && !isNaN(newPrice) && newPrice > 0) {
+            db.ref(`inventory/${id}/price`).set(parseInt(newPrice));
+            showSuccessMsg(`✅ Цена обновлена на ${Number(newPrice).toLocaleString()} ₽`);
+        }
+        
+        const newNum = prompt('Новый номер (без +7):', item.num);
+        if(newNum && newNum.trim()) {
+            db.ref(`inventory/${id}/num`).set(newNum.trim());
+            showSuccessMsg(`✅ Номер обновлен на +7 ${newNum}`);
+        }
+    };
+    
+    // Удаление номера
+    window.deleteNumber = function(id) {
+        if(confirm('Удалить номер с сайта?')) {
+            db.ref(`inventory/${id}`).remove();
+            showSuccessMsg('✅ Номер удален с сайта');
+        }
+    };
+    
     // ============ СТАТИСТИКА ============
     async function loadStats() {
         const snapshot = await db.ref('orders').once('value');
@@ -302,100 +445,7 @@
         `).join('');
     }
     
-    window.deleteUser = function(id) { if(confirm('Удалить?')) db.ref(`users/${id}`).remove(); };
-    
-    // ============ НОМЕРА (ГЛАВНОЕ - ПРАВИЛЬНОЕ ДОБАВЛЕНИЕ) ============
-    function loadNumbers() {
-        db.ref('inventory').on('value', s => {
-            allNumbers = [];
-            s.forEach(c => allNumbers.push({ id: c.key, ...c.val() }));
-            renderNumbers();
-            // Обновляем статистику после изменения номеров
-            loadStats();
-        });
-    }
-    
-    function renderNumbers() {
-        const search = document.getElementById('filterNum')?.value.toLowerCase() || '';
-        const opFilter = document.getElementById('filterOperator')?.value || '';
-        const container = document.getElementById('numbersList');
-        if(!container) return;
-        let filtered = allNumbers.filter(n => n.num?.toLowerCase().includes(search) && (opFilter === '' || n.op === opFilter));
-        
-        if(filtered.length === 0) {
-            container.innerHTML = '<div class="text-center text-gray-500 py-4">Нет номеров. Добавьте первый!</div>';
-            return;
-        }
-        
-        container.innerHTML = filtered.map(n => `
-            <div class="bg-white/10 p-3 rounded-lg flex justify-between items-center flex-wrap gap-2">
-                <div>
-                    <span class="gold font-bold">${n.op}</span> 
-                    <span class="text-sm text-gray-400">${n.category || 'Стандарт'}</span>
-                    <p class="text-lg font-bold mt-1">+7 ${n.num}</p>
-                    <p class="gold font-bold">${Number(n.price).toLocaleString()} ₽</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="editNumber('${n.id}')" class="edit-btn">✏️ Ред.</button>
-                    <button onclick="deleteNumber('${n.id}')" class="delete-btn">🗑️ Удалить</button>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    // ДОБАВЛЕНИЕ НОМЕРА - ПРАВИЛЬНЫЙ ФОРМАТ
-    window.addNumber = function() {
-        const num = document.getElementById('newNum').value.trim();
-        const price = document.getElementById('newPrice').value;
-        const op = document.getElementById('newOp').value;
-        const category = document.getElementById('newCategory').value;
-        
-        if(!num) {
-            alert('❌ Введите номер!');
-            return;
-        }
-        if(!price || price <= 0) {
-            alert('❌ Введите корректную цену!');
-            return;
-        }
-        
-        // Сохраняем в Firebase (именно этот путь использует основной сайт)
-        const newNumberRef = db.ref('inventory').push();
-        newNumberRef.set({
-            num: num,
-            price: parseInt(price),
-            op: op,
-            category: category,
-            status: 'active',
-            createdAt: new Date().toLocaleString()
-        }).then(() => {
-            showSuccessMsg(`✅ Номер +7 ${num} добавлен на сайт!`);
-            document.getElementById('newNum').value = '';
-            document.getElementById('newPrice').value = '';
-            
-            // Принудительно обновляем список
-            setTimeout(() => loadNumbers(), 500);
-        }).catch(err => {
-            console.error(err);
-            alert('❌ Ошибка при добавлении номера');
-        });
-    };
-    
-    window.editNumber = function(id) {
-        const item = allNumbers.find(n => n.id === id);
-        const newPrice = prompt('Новая цена (в рублях):', item.price);
-        if(newPrice && !isNaN(newPrice)) {
-            db.ref(`inventory/${id}/price`).set(parseInt(newPrice));
-            showSuccessMsg(`✅ Цена обновлена`);
-        }
-    };
-    
-    window.deleteNumber = function(id) {
-        if(confirm('Удалить номер с сайта?')) {
-            db.ref(`inventory/${id}`).remove();
-            showSuccessMsg(`✅ Номер удален`);
-        }
-    };
+    window.deleteUser = function(id) { if(confirm('Удалить пользователя?')) db.ref(`users/${id}`).remove(); };
     
     // ============ ЗАКАЗЫ ============
     function loadOrders() {
@@ -403,7 +453,7 @@
             allOrders = [];
             s.forEach(c => allOrders.push({ id: c.key, ...c.val() }));
             renderOrders();
-            loadStats(); // Обновляем статистику при изменении заказов
+            loadStats();
         });
     }
     
@@ -441,7 +491,7 @@
     
     window.updateStatus = function(id, status) { 
         db.ref(`orders/${id}/status`).set(status);
-        showSuccessMsg(`✅ Статус заказа изменен на ${status}`);
+        showSuccessMsg(`✅ Статус заказа изменен`);
     };
     
     // ============ ПРОМОКОДЫ ============
@@ -452,7 +502,7 @@
             container.innerHTML = '';
             s.forEach(c => {
                 const p = c.val();
-                container.innerHTML += `<div class="bg-white/10 p-2 rounded flex justify-between items-center"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'}</span><button onclick="deletePromo('${c.key}')" class="delete-btn">🗑️</button></div>`;
+                container.innerHTML += `<div class="bg-white/10 p-2 rounded flex justify-between"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'}</span><button onclick="deletePromo('${c.key}')" class="delete-btn">🗑️</button></div>`;
             });
         });
     }
@@ -498,19 +548,16 @@
     
     // ============ ЭКСПОРТ ============
     window.exportUsers = function() {
-        const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone, Дата: u.registeredAt })));
+        const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone })));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Пользователи'); XLSX.writeFile(wb, 'users.xlsx');
-        showSuccessMsg('✅ Экспорт пользователей выполнен');
     };
     window.exportOrders = function() {
-        const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status, Дата: o.date })));
+        const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status })));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Заказы'); XLSX.writeFile(wb, 'orders.xlsx');
-        showSuccessMsg('✅ Экспорт заказов выполнен');
     };
     window.exportNumbers = function() {
         const ws = XLSX.utils.json_to_sheet(allNumbers.map(n => ({ Номер: n.num, Цена: n.price, Оператор: n.op, Категория: n.category })));
         const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Номера'); XLSX.writeFile(wb, 'numbers.xlsx');
-        showSuccessMsg('✅ Экспорт номеров выполнен');
     };
     
     // Фильтры
