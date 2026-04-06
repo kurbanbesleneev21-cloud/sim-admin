@@ -23,21 +23,11 @@
             background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
             border-right: 1px solid rgba(212, 175, 55, 0.3);
             overflow-y: auto;
+            z-index: 100;
         }
         
-        .sidebar-header {
-            padding: 30px 20px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            text-align: center;
-        }
-        
-        .sidebar-header h1 {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #d4af37, #f3e5ab);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .sidebar-header { padding: 30px 20px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); text-align: center; }
+        .sidebar-header h1 { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #d4af37, #f3e5ab); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
         .menu-item {
             display: flex;
@@ -50,7 +40,6 @@
             transition: all 0.3s;
             color: #aaa;
         }
-        
         .menu-item i { width: 24px; font-size: 20px; }
         .menu-item:hover { background: rgba(212, 175, 55, 0.1); color: #d4af37; }
         .menu-item.active { background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05)); color: #d4af37; border-left: 3px solid #d4af37; }
@@ -73,15 +62,7 @@
             margin-bottom: 25px;
         }
         
-        .data-card h2 {
-            color: #d4af37;
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .data-card h2 { color: #d4af37; font-size: 20px; font-weight: bold; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         
         input, select {
             background: #0f0f1a;
@@ -92,7 +73,6 @@
             width: 100%;
             outline: none;
         }
-        
         input:focus, select:focus { border-color: #d4af37; }
         
         button {
@@ -105,11 +85,11 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
         button:hover { transform: translateY(-2px); }
         
         .btn-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; }
         .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         
         .number-item {
             background: rgba(255,255,255,0.03);
@@ -123,7 +103,6 @@
             gap: 15px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        
         .number-item:hover { border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05); }
         
         .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; }
@@ -142,22 +121,10 @@
             display: none;
         }
         
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
-        }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, #0a0a0a, #1a1a2e); }
+        .login-box { background: #1a1a2e; border: 1px solid #d4af37; border-radius: 30px; padding: 50px; width: 400px; text-align: center; }
         
-        .login-box {
-            background: #1a1a2e;
-            border: 1px solid #d4af37;
-            border-radius: 30px;
-            padding: 50px;
-            width: 400px;
-            text-align: center;
-        }
+        .debug-panel { background: #0f0f1a; border: 1px solid #d4af37; border-radius: 12px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 13px; }
         
         @media (max-width: 768px) {
             .sidebar { width: 80px; }
@@ -165,16 +132,6 @@
             .sidebar-header h1::before { content: "S"; font-size: 24px; display: block; }
             .menu-item span { display: none; }
             .main-content { margin-left: 80px; padding: 20px; }
-        }
-        
-        .debug-panel {
-            background: #0f0f1a;
-            border: 1px solid #d4af37;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 13px;
         }
     </style>
 </head>
@@ -186,7 +143,7 @@
         <h1 class="text-3xl font-bold mb-4" style="color: #d4af37;">🔐 S-MARKET</h1>
         <h2 class="text-xl mb-6">Вход в админ-панель</h2>
         <input type="password" id="adminPassword" placeholder="Введите пароль" class="mb-4">
-        <button onclick="checkLogin()" style="width: 100%;">ВОЙТИ</button>
+        <button onclick="window.checkLogin()" style="width: 100%;">ВОЙТИ</button>
         <p class="text-gray-500 mt-4 text-sm">Пароль: <strong style="color: #d4af37;">admin2024</strong></p>
     </div>
 </div>
@@ -195,13 +152,13 @@
 <div id="adminPanel" style="display: none;">
     <div class="sidebar">
         <div class="sidebar-header"><h1>S-MARKET PRO</h1><p class="text-xs text-gray-500 mt-2">Админ-панель</p></div>
-        <div class="menu-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>📊 Дашборд</span></div>
-        <div class="menu-item" onclick="showSection('numbers')"><i class="fas fa-phone"></i><span>📱 Номера</span></div>
-        <div class="menu-item" onclick="showSection('orders')"><i class="fas fa-box"></i><span>📦 Заказы</span></div>
-        <div class="menu-item" onclick="showSection('users')"><i class="fas fa-users"></i><span>👥 Пользователи</span></div>
-        <div class="menu-item" onclick="showSection('promo')"><i class="fas fa-ticket"></i><span>🎫 Промокоды</span></div>
-        <div class="menu-item" onclick="showSection('banner')"><i class="fas fa-image"></i><span>🖼️ Баннер</span></div>
-        <div class="menu-item" onclick="showSection('export')"><i class="fas fa-download"></i><span>📎 Экспорт</span></div>
+        <div class="menu-item active" onclick="window.showSection('dashboard')"><i class="fas fa-chart-line"></i><span>📊 Дашборд</span></div>
+        <div class="menu-item" onclick="window.showSection('numbers')"><i class="fas fa-phone"></i><span>📱 Номера</span></div>
+        <div class="menu-item" onclick="window.showSection('orders')"><i class="fas fa-box"></i><span>📦 Заказы</span></div>
+        <div class="menu-item" onclick="window.showSection('users')"><i class="fas fa-users"></i><span>👥 Пользователи</span></div>
+        <div class="menu-item" onclick="window.showSection('promo')"><i class="fas fa-ticket"></i><span>🎫 Промокоды</span></div>
+        <div class="menu-item" onclick="window.showSection('banner')"><i class="fas fa-image"></i><span>🖼️ Баннер</span></div>
+        <div class="menu-item" onclick="window.showSection('export')"><i class="fas fa-download"></i><span>📎 Экспорт</span></div>
     </div>
     
     <div class="main-content">
@@ -217,14 +174,11 @@
             <div class="data-card"><canvas id="salesChart" height="200"></canvas></div>
         </div>
         
-        <!-- Номера (с отладкой) -->
+        <!-- Номера -->
         <div id="numbersSection" class="section" style="display: none;">
             <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📱 Управление номерами</h1>
             
-            <!-- Отладочная панель -->
-            <div class="debug-panel" id="debugPanel">
-                🔍 Статус: Проверка подключения к Firebase...
-            </div>
+            <div class="debug-panel" id="debugPanel">🔍 Статус: Проверка подключения...</div>
             
             <div class="data-card">
                 <h2><i class="fas fa-plus-circle"></i> Добавить новый номер</h2>
@@ -234,7 +188,7 @@
                     <select id="newOp"><option>МЕГАФОН</option><option>БИЛАЙН</option><option>МТС</option><option>TELE2</option></select>
                     <select id="newCategory"><option>Золотой</option><option>Платиновый</option><option>VIP</option></select>
                 </div>
-                <button onclick="addNumber()">➕ Добавить номер</button>
+                <button onclick="window.addNumber()">➕ Добавить номер</button>
             </div>
             
             <div class="data-card">
@@ -242,8 +196,8 @@
                 <div class="flex gap-4 flex-wrap">
                     <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
                     <select id="filterOperator" class="w-auto"><option value="">Все операторы</option><option>МЕГАФОН</option><option>БИЛАЙН</option><option>МТС</option></select>
-                    <button onclick="forceLoadNumbers()" class="btn-info" style="width: auto;">🔄 Принудительно обновить</button>
-                    <button onclick="createTestNumbers()" class="btn-info" style="width: auto; background:#f59e0b;">📝 Создать тестовые номера</button>
+                    <button onclick="window.forceLoadNumbers()" class="btn-info" style="width: auto;">🔄 Обновить</button>
+                    <button onclick="window.createTestNumbers()" class="btn-warning" style="width: auto;">📝 Тестовые номера</button>
                 </div>
             </div>
             
@@ -253,22 +207,42 @@
             </div>
         </div>
         
-        <!-- Остальные секции (упрощенно) -->
-        <div id="ordersSection" class="section" style="display: none;"><div class="data-card"><h2>📦 Заказы</h2><div id="ordersList"></div></div></div>
-        <div id="usersSection" class="section" style="display: none;"><div class="data-card"><h2>👥 Пользователи</h2><input type="text" id="userSearch" placeholder="Поиск..."><div id="usersList" class="mt-4"></div></div></div>
-        <div id="promoSection" class="section" style="display: none;"><div class="data-card"><h2>🎫 Промокоды</h2><div class="grid grid-cols-2 gap-3 mb-4"><input type="text" id="promoCode" placeholder="Код"><select id="promoType"><option value="percent">%</option><option value="fixed">₽</option></select><input type="number" id="promoValue" placeholder="Значение"><input type="date" id="promoExpiry"></div><button onclick="addPromoCode()">Создать</button><div id="promoList" class="mt-4"></div></div></div>
-        <div id="bannerSection" class="section" style="display: none;"><div class="data-card"><h2>🖼️ Баннер</h2><input type="text" id="bannerTitle" placeholder="Заголовок"><input type="text" id="bannerSub" placeholder="Подзаголовок" class="mt-3"><button onclick="updateBanner()" class="mt-4">Опубликовать</button></div></div>
-        <div id="exportSection" class="section" style="display: none;"><div class="data-card"><h2>📎 Экспорт</h2><div class="grid grid-cols-3 gap-3"><button onclick="exportUsers()" class="btn-info">Пользователи</button><button onclick="exportOrders()" class="btn-info">Заказы</button><button onclick="exportNumbers()" class="btn-info">Номера</button></div></div></div>
+        <!-- Заказы -->
+        <div id="ordersSection" class="section" style="display: none;">
+            <div class="data-card"><h2>📦 Заказы</h2><div id="ordersList"></div></div>
+        </div>
+        
+        <!-- Пользователи -->
+        <div id="usersSection" class="section" style="display: none;">
+            <div class="data-card"><h2>👥 Пользователи</h2><input type="text" id="userSearch" placeholder="Поиск..."><div id="usersList" class="mt-4"></div></div>
+        </div>
+        
+        <!-- Промокоды -->
+        <div id="promoSection" class="section" style="display: none;">
+            <div class="data-card"><h2>🎫 Промокоды</h2><div class="grid grid-cols-2 gap-3 mb-4"><input type="text" id="promoCode" placeholder="Код"><select id="promoType"><option value="percent">%</option><option value="fixed">₽</option></select><input type="number" id="promoValue" placeholder="Значение"><input type="date" id="promoExpiry"></div><button onclick="window.addPromoCode()">Создать</button><div id="promoList" class="mt-4"></div></div>
+        </div>
+        
+        <!-- Баннер -->
+        <div id="bannerSection" class="section" style="display: none;">
+            <div class="data-card"><h2>🖼️ Баннер</h2><input type="text" id="bannerTitle" placeholder="Заголовок"><input type="text" id="bannerSub" placeholder="Подзаголовок" class="mt-3"><button onclick="window.updateBanner()" class="mt-4">Опубликовать</button></div>
+        </div>
+        
+        <!-- Экспорт -->
+        <div id="exportSection" class="section" style="display: none;">
+            <div class="data-card"><h2>📎 Экспорт</h2><div class="grid grid-cols-3 gap-3"><button onclick="window.exportUsers()" class="btn-info">Пользователи</button><button onclick="window.exportOrders()" class="btn-info">Заказы</button><button onclick="window.exportNumbers()" class="btn-info">Номера</button></div></div>
+        </div>
     </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-    firebase.initializeApp({
+    // Firebase
+    const firebaseConfig = {
         apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44",
         databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com"
-    });
+    };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
     let allNumbers = [];
@@ -276,28 +250,39 @@
     let allUsers = [];
     let salesChart = null;
     
-    // Вход
-    window.checkLogin = function() {
-        if(document.getElementById('adminPassword').value === 'admin2024') {
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-            initAll();
-        } else { alert('Неверный пароль!'); }
-    };
-    
-    document.getElementById('adminPassword')?.addEventListener('keypress', function(e) { if(e.key === 'Enter') checkLogin(); });
-    
-    function showToast(msg) {
+    // Функция показа уведомлений
+    function showToast(msg, isError = false) {
         const toast = document.getElementById('toast');
         toast.innerText = msg;
+        toast.style.background = isError ? '#dc2626' : '#10b981';
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
     
-    // Принудительная загрузка номеров
-    window.forceLoadNumbers = function() { loadNumbers(); showToast('🔄 Обновление...'); };
+    // ВХОД
+    window.checkLogin = function() {
+        const pwd = document.getElementById('adminPassword').value;
+        if(pwd === 'admin2024') {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            initAll();
+        } else {
+            alert('❌ Неверный пароль! Пароль: admin2024');
+        }
+    };
     
-    // Создание тестовых номеров
+    // Enter для входа
+    document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') window.checkLogin();
+    });
+    
+    // Принудительная загрузка номеров
+    window.forceLoadNumbers = function() { 
+        loadNumbers(); 
+        showToast('🔄 Обновление списка...');
+    };
+    
+    // СОЗДАНИЕ ТЕСТОВЫХ НОМЕРОВ
     window.createTestNumbers = function() {
         const testNumbers = [
             { num: "964-274-80-80", price: 800, op: "БИЛАЙН", category: "Золотой" },
@@ -313,10 +298,10 @@
         setTimeout(() => loadNumbers(), 1000);
     };
     
-    // Загрузка номеров
+    // ЗАГРУЗКА НОМЕРОВ
     function loadNumbers() {
         const debugPanel = document.getElementById('debugPanel');
-        debugPanel.innerHTML = '🔄 Загрузка номеров из Firebase...';
+        if(debugPanel) debugPanel.innerHTML = '🔄 Загрузка номеров из Firebase...';
         
         db.ref('inventory').once('value').then(snapshot => {
             allNumbers = [];
@@ -326,28 +311,30 @@
                 Object.keys(data).forEach(key => {
                     allNumbers.push({ id: key, ...data[key] });
                 });
-                debugPanel.innerHTML = `✅ УСПЕХ! Загружено номеров: ${allNumbers.length} шт.`;
-                debugPanel.style.background = 'rgba(16,185,129,0.2)';
+                if(debugPanel) {
+                    debugPanel.innerHTML = `✅ УСПЕХ! Загружено номеров: ${allNumbers.length} шт.`;
+                    debugPanel.style.background = 'rgba(16,185,129,0.2)';
+                }
             } else {
-                debugPanel.innerHTML = '⚠️ В Firebase НЕТ НОМЕРОВ! Нажмите "Создать тестовые номера"';
-                debugPanel.style.background = 'rgba(245,158,11,0.2)';
+                if(debugPanel) {
+                    debugPanel.innerHTML = '⚠️ В Firebase НЕТ НОМЕРОВ! Нажмите "Тестовые номера"';
+                    debugPanel.style.background = 'rgba(245,158,11,0.2)';
+                }
             }
             
             document.getElementById('numbersCount').innerText = allNumbers.length;
             renderNumbers();
             loadStats();
         }).catch(error => {
-            debugPanel.innerHTML = `❌ ОШИБКА: ${error.message}`;
-            debugPanel.style.background = 'rgba(220,38,38,0.2)';
+            if(debugPanel) {
+                debugPanel.innerHTML = `❌ ОШИБКА: ${error.message}`;
+                debugPanel.style.background = 'rgba(220,38,38,0.2)';
+            }
             console.error('Ошибка Firebase:', error);
         });
-        
-        // Также слушаем изменения
-        db.ref('inventory').on('child_added', () => loadNumbers());
-        db.ref('inventory').on('child_removed', () => loadNumbers());
-        db.ref('inventory').on('child_changed', () => loadNumbers());
     }
     
+    // ОТОБРАЖЕНИЕ НОМЕРОВ
     function renderNumbers() {
         const search = document.getElementById('filterNum')?.value.toLowerCase() || '';
         const opFilter = document.getElementById('filterOperator')?.value || '';
@@ -361,7 +348,7 @@
         });
         
         if(filtered.length === 0) {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров. Нажмите "Создать тестовые номера"</div>';
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров. Нажмите "Тестовые номера"</div>';
             return;
         }
         
@@ -374,43 +361,64 @@
                     <p class="text-2xl font-bold" style="color: #d4af37;">${Number(n.price).toLocaleString()} ₽</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="editNumber('${n.id}')" class="btn-info" style="padding: 8px 16px;">✏️ Ред.</button>
-                    <button onclick="deleteNumber('${n.id}')" class="btn-danger" style="padding: 8px 16px;">🗑️ Удалить</button>
+                    <button onclick="window.editNumber('${n.id}')" class="btn-info" style="padding: 8px 16px;">✏️ Ред.</button>
+                    <button onclick="window.deleteNumber('${n.id}')" class="btn-danger" style="padding: 8px 16px;">🗑️ Удалить</button>
                 </div>
             </div>
         `).join('');
     }
     
+    // ДОБАВЛЕНИЕ НОМЕРА
     window.addNumber = function() {
         const num = document.getElementById('newNum').value.trim();
         const price = document.getElementById('newPrice').value;
         const op = document.getElementById('newOp').value;
         const category = document.getElementById('newCategory').value;
+        
         if(!num) { alert('Введите номер!'); return; }
         if(!price || price <= 0) { alert('Введите цену!'); return; }
         
-        db.ref('inventory').push({ num, price: parseInt(price), op, category, status: 'active', createdAt: new Date().toLocaleString() }).then(() => {
+        db.ref('inventory').push({ 
+            num: num, 
+            price: parseInt(price), 
+            op: op, 
+            category: category, 
+            status: 'active', 
+            createdAt: new Date().toLocaleString() 
+        }).then(() => {
             showToast(`✅ Номер +7 ${num} добавлен`);
             document.getElementById('newNum').value = '';
             document.getElementById('newPrice').value = '';
+            loadNumbers();
         });
     };
     
+    // РЕДАКТИРОВАНИЕ
     window.editNumber = function(id) {
         const item = allNumbers.find(n => n.id === id);
+        if(!item) return;
         const newPrice = prompt('Новая цена (₽):', item.price);
         if(newPrice && !isNaN(newPrice)) db.ref(`inventory/${id}/price`).set(parseInt(newPrice));
         const newNum = prompt('Новый номер:', item.num);
         if(newNum && newNum.trim()) db.ref(`inventory/${id}/num`).set(newNum.trim());
         showToast('✅ Номер обновлен');
+        setTimeout(() => loadNumbers(), 500);
     };
     
-    window.deleteNumber = function(id) { if(confirm('Удалить номер?')) db.ref(`inventory/${id}`).remove(); };
+    // УДАЛЕНИЕ
+    window.deleteNumber = function(id) { 
+        if(confirm('Удалить номер?')) {
+            db.ref(`inventory/${id}`).remove();
+            showToast('✅ Номер удален');
+            setTimeout(() => loadNumbers(), 500);
+        }
+    };
     
-    // Статистика
+    // СТАТИСТИКА
     async function loadStats() {
         const snapshot = await db.ref('orders').once('value');
-        let orders = []; snapshot.forEach(o => orders.push(o.val()));
+        let orders = []; 
+        snapshot.forEach(o => orders.push(o.val()));
         const revenue = orders.reduce((s,o) => s + (parseInt(o.price)||0), 0);
         document.getElementById('totalRevenue').innerText = revenue.toLocaleString() + ' ₽';
         document.getElementById('totalOrders').innerText = orders.length;
@@ -424,31 +432,116 @@
         
         if(salesChart) salesChart.destroy();
         const ctx = document.getElementById('salesChart');
-        if(ctx) salesChart = new Chart(ctx, { type: 'line', data: { labels: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'], datasets: [{ label: 'Продажи', data: [0,0,0,0,0,0,0], borderColor: '#d4af37' }] } });
+        if(ctx) {
+            salesChart = new Chart(ctx, { 
+                type: 'line', 
+                data: { labels: ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'], datasets: [{ label: 'Продажи', data: [0,0,0,0,0,0,0], borderColor: '#d4af37' }] } 
+            });
+        }
     }
     
-    // Остальные функции
-    function loadUsers() { db.ref('users').on('value', s => { allUsers = []; s.forEach(c => allUsers.push({ id: c.key, ...c.val() })); renderUsers(); }); }
-    function renderUsers() { const container = document.getElementById('usersList'); if(!container) return; container.innerHTML = allUsers.map(u => `<div class="bg-white/5 p-3 rounded mb-2">${u.name || 'Без имени'} - ${u.email || '-'}</div>`).join(''); }
-    function loadOrders() { db.ref('orders').on('value', s => { allOrders = []; s.forEach(c => allOrders.push(c.val())); renderOrders(); }); }
-    function renderOrders() { const container = document.getElementById('ordersList'); if(!container) return; container.innerHTML = allOrders.map(o => `<div class="bg-white/5 p-3 rounded mb-2">${o.name} - +7 ${o.item} - ${o.price}₽</div>`).join(''); }
-    function loadPromoCodes() { db.ref('promocodes').on('value', s => { const container = document.getElementById('promoList'); if(!container) return; container.innerHTML = ''; s.forEach(c => { const p = c.val(); container.innerHTML += `<div class="bg-white/5 p-2 rounded">${p.code} - ${p.value}${p.type==='percent'?'%':'₽'}</div>`; }); }); }
-    window.addPromoCode = function() { const code = document.getElementById('promoCode').value, type = document.getElementById('promoType').value, value = document.getElementById('promoValue').value; if(code && value) db.ref('promocodes').push({ code, type, value }); };
-    window.updateBanner = function() { const title = document.getElementById('bannerTitle').value, sub = document.getElementById('bannerSub').value; if(title) db.ref('settings/banner').set({ title, sub }); };
-    window.exportUsers = function() { const ws = XLSX.utils.json_to_sheet(allUsers); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Users'); XLSX.writeFile(wb, 'users.xlsx'); };
-    window.exportOrders = function() { const ws = XLSX.utils.json_to_sheet(allOrders); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Orders'); XLSX.writeFile(wb, 'orders.xlsx'); };
-    window.exportNumbers = function() { const ws = XLSX.utils.json_to_sheet(allNumbers); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Numbers'); XLSX.writeFile(wb, 'numbers.xlsx'); };
+    // ПОЛЬЗОВАТЕЛИ
+    function loadUsers() { 
+        db.ref('users').on('value', s => { 
+            allUsers = []; 
+            s.forEach(c => allUsers.push({ id: c.key, ...c.val() })); 
+            renderUsers(); 
+        }); 
+    }
     
-    function initAll() { loadNumbers(); loadUsers(); loadOrders(); loadPromoCodes(); loadStats(); }
+    function renderUsers() { 
+        const container = document.getElementById('usersList'); 
+        if(!container) return; 
+        container.innerHTML = allUsers.map(u => `<div class="bg-white/5 p-3 rounded mb-2">${u.name || 'Без имени'} - ${u.email || '-'}</div>`).join(''); 
+    }
     
+    // ЗАКАЗЫ
+    function loadOrders() { 
+        db.ref('orders').on('value', s => { 
+            allOrders = []; 
+            s.forEach(c => allOrders.push(c.val())); 
+            renderOrders(); 
+        }); 
+    }
+    
+    function renderOrders() { 
+        const container = document.getElementById('ordersList'); 
+        if(!container) return; 
+        container.innerHTML = allOrders.map(o => `<div class="bg-white/5 p-3 rounded mb-2">${o.name} - +7 ${o.item} - ${o.price}₽</div>`).join(''); 
+    }
+    
+    // ПРОМОКОДЫ
+    function loadPromoCodes() { 
+        db.ref('promocodes').on('value', s => { 
+            const container = document.getElementById('promoList'); 
+            if(!container) return; 
+            container.innerHTML = ''; 
+            s.forEach(c => { const p = c.val(); container.innerHTML += `<div class="bg-white/5 p-2 rounded mb-2">${p.code} - ${p.value}${p.type==='percent'?'%':'₽'}</div>`; }); 
+        }); 
+    }
+    
+    window.addPromoCode = function() { 
+        const code = document.getElementById('promoCode').value; 
+        const type = document.getElementById('promoType').value; 
+        const value = document.getElementById('promoValue').value; 
+        if(code && value) { 
+            db.ref('promocodes').push({ code, type, value }); 
+            showToast('✅ Промокод создан'); 
+            document.getElementById('promoCode').value = ''; 
+            document.getElementById('promoValue').value = ''; 
+        } 
+    };
+    
+    // БАННЕР
+    window.updateBanner = function() { 
+        const title = document.getElementById('bannerTitle').value; 
+        const sub = document.getElementById('bannerSub').value; 
+        if(title) { 
+            db.ref('settings/banner').set({ title, sub }); 
+            showToast('✅ Баннер обновлен'); 
+        } 
+    };
+    
+    // ЭКСПОРТ
+    window.exportUsers = function() { 
+        const ws = XLSX.utils.json_to_sheet(allUsers); 
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, 'Users'); 
+        XLSX.writeFile(wb, 'users.xlsx'); 
+        showToast('✅ Экспорт выполнен'); 
+    };
+    window.exportOrders = function() { 
+        const ws = XLSX.utils.json_to_sheet(allOrders); 
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, 'Orders'); 
+        XLSX.writeFile(wb, 'orders.xlsx'); 
+    };
+    window.exportNumbers = function() { 
+        const ws = XLSX.utils.json_to_sheet(allNumbers); 
+        const wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, 'Numbers'); 
+        XLSX.writeFile(wb, 'numbers.xlsx'); 
+    };
+    
+    // ПЕРЕКЛЮЧЕНИЕ СЕКЦИЙ
     window.showSection = function(section) {
         document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
         document.getElementById(section + 'Section').style.display = 'block';
         document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
         event.currentTarget.classList.add('active');
-        if(section === 'numbers') forceLoadNumbers();
+        if(section === 'numbers') loadNumbers();
     };
     
+    // ИНИЦИАЛИЗАЦИЯ
+    function initAll() { 
+        loadNumbers(); 
+        loadUsers(); 
+        loadOrders(); 
+        loadPromoCodes(); 
+        loadStats(); 
+    }
+    
+    // Фильтры
     document.getElementById('filterNum')?.addEventListener('input', () => renderNumbers());
     document.getElementById('filterOperator')?.addEventListener('change', () => renderNumbers());
     document.getElementById('userSearch')?.addEventListener('input', () => renderUsers());
