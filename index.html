@@ -3,200 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-MARKET | Админ-панель</title>
+    <title>S-MARKET | PRO Админ-панель</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0a0a0a; color: #fff; font-family: Arial, sans-serif; }
-        .card { background: #1a1a2e; border: 1px solid #d4af37; border-radius: 20px; padding: 24px; margin-bottom: 24px; }
-        .gold { color: #d4af37; }
-        input, select, textarea { background: #0f0f1a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 10px; width: 100%; margin-top: 8px; }
-        button { background: #d4af37; color: #000; font-weight: bold; padding: 12px; border-radius: 10px; width: 100%; margin-top: 12px; cursor: pointer; border: none; }
-        button:hover { opacity: 0.9; }
-        .delete-btn { background: #dc2626; color: white; width: auto; padding: 5px 10px; font-size: 12px; margin-top: 0; }
-        .edit-btn { background: #3b82f6; color: white; width: auto; padding: 5px 10px; font-size: 12px; margin-top: 0; }
-        .tab { display: inline-block; padding: 10px 20px; cursor: pointer; background: #1a1a2e; margin-right: 5px; border-radius: 10px 10px 0 0; }
-        .tab.active { background: #d4af37; color: #000; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .stat-card { background: rgba(212,175,55,0.1); border-radius: 16px; padding: 20px; text-align: center; }
-        .login-box { max-width: 400px; margin: 100px auto; background: #1a1a2e; padding: 40px; border-radius: 30px; border: 1px solid #d4af37; text-align: center; }
-        .login-box input { margin-bottom: 20px; }
-        .login-btn { background: #d4af37; color: #000; padding: 15px; font-size: 18px; }
-        .success-msg { background: #10b981; color: white; padding: 10px; border-radius: 10px; text-align: center; margin-top: 10px; display: none; }
-        .number-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .debug-info { background: #1a1a2e; border: 1px solid #d4af37; border-radius: 10px; padding: 10px; margin-bottom: 15px; font-family: monospace; font-size: 12px; }
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        
+        /* Боковое меню */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+            border-right: 1px solid rgba(212, 175, 55, 0.3);
+            z-index: 100;
+            transition: all 0.3s;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+        }
+        
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d4af37, #f3e5ab);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 25px;
+            margin: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #aaa;
+        }
+        
+        .menu-item i {
+            width: 24px;
+            font-size: 20px;
+        }
+        
+        .menu-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: #d4af37;
+        }
+        
+        .menu-item.active {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
+            color: #d4af37;
+            border-left: 3px solid #d4af37;
+        }
+        
+        /* Основной контент */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        /* Карточки */
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #d4af37;
+        }
+        
+        .data-card {
+            background: #1a1a2e;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .data-card h2 {
+            color: #d4af37;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        input, select, textarea {
+            background: #0f0f1a;
+            border: 1px solid #2a2a3a;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #d4af37, #b8921e);
+            color: #000;
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+        }
+        
+        .btn-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; }
+        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        
+        .number-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .number-item:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            background: rgba(212, 175, 55, 0.05);
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .badge-gold { background: #d4af37; color: #000; }
+        .badge-blue { background: #3b82f6; color: #fff; }
+        .badge-green { background: #10b981; color: #fff; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #d4af37;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+        }
+        
+        .login-box {
+            background: #1a1a2e;
+            border: 1px solid #d4af37;
+            border-radius: 30px;
+            padding: 50px;
+            width: 400px;
+            text-align: center;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; }
+            .sidebar-header h1 { font-size: 0; }
+            .sidebar-header h1::before { content: "S"; font-size: 24px; display: block; }
+            .menu-item span { display: none; }
+            .menu-item i { margin: 0 auto; }
+            .main-content { margin-left: 80px; padding: 20px; }
+        }
+        
+        /* Скроллбар */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-<!-- СТРАНИЦА ВХОДА -->
-<div id="loginPage" class="login-box">
-    <h1 class="text-3xl font-bold gold mb-4">🔐 S-MARKET</h1>
-    <h2 class="text-xl mb-6">Вход в админ-панель</h2>
-    <input type="password" id="adminPassword" placeholder="Введите пароль">
-    <button class="login-btn" onclick="checkLogin()">ВОЙТИ</button>
-    <p class="text-gray-500 mt-4 text-sm">Пароль: <strong class="gold">admin2024</strong></p>
+<!-- Модалка входа -->
+<div id="loginModal" class="login-container">
+    <div class="login-box">
+        <h1 class="text-3xl font-bold mb-4" style="color: #d4af37;">🔐 S-MARKET</h1>
+        <h2 class="text-xl mb-6">Вход в админ-панель</h2>
+        <input type="password" id="adminPassword" placeholder="Введите пароль" class="mb-4">
+        <button onclick="checkLogin()" style="width: 100%;">ВОЙТИ</button>
+        <p class="text-gray-500 mt-4 text-sm">Пароль: <strong style="color: #d4af37;">admin2024</strong></p>
+    </div>
 </div>
 
-<!-- АДМИН-ПАНЕЛЬ -->
-<div id="adminPanel" style="display: none; padding: 20px;">
-    <h1 class="text-3xl font-bold gold mb-2 text-center">✨ S-MARKET Админ-панель</h1>
-    <p class="text-center text-gray-500 mb-6">Полное управление магазином</p>
-    
-    <!-- Вкладки -->
-    <div class="flex flex-wrap mb-6">
-        <div class="tab active" onclick="showTab('stats')">📊 Статистика</div>
-        <div class="tab" onclick="showTab('users')">👥 Пользователи</div>
-        <div class="tab" onclick="showTab('numbers')">📱 Номера</div>
-        <div class="tab" onclick="showTab('orders')">📦 Заказы</div>
-        <div class="tab" onclick="showTab('promo')">🎫 Промокоды</div>
-        <div class="tab" onclick="showTab('banner')">🖼️ Баннер</div>
-        <div class="tab" onclick="showTab('export')">📎 Экспорт</div>
-    </div>
-    
-    <div id="successMsg" class="success-msg"></div>
-    
-    <!-- Статистика -->
-    <div id="statsTab" class="tab-content active">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">📊 Финансы и аналитика</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="stat-card"><p class="text-gray-400 text-sm">Выручка</p><p id="totalRevenue" class="text-2xl font-bold gold">0 ₽</p></div>
-                <div class="stat-card"><p class="text-gray-400 text-sm">Заказов</p><p id="totalOrders" class="text-2xl font-bold gold">0</p></div>
-                <div class="stat-card"><p class="text-gray-400 text-sm">Пользователей</p><p id="totalUsers" class="text-2xl font-bold gold">0</p></div>
-                <div class="stat-card"><p class="text-gray-400 text-sm">Новых за неделю</p><p id="newOrdersWeek" class="text-2xl font-bold gold">0</p></div>
+<!-- Основная админ-панель -->
+<div id="adminPanel" style="display: none;">
+    <!-- Боковое меню -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>S-MARKET PRO</h1>
+            <p class="text-xs text-gray-500 mt-2">Админ-панель</p>
+        </div>
+        <div class="sidebar-menu">
+            <div class="menu-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-chart-line"></i>
+                <span>📊 Дашборд</span>
             </div>
-            <canvas id="salesChart" height="200"></canvas>
-            <h3 class="font-bold mt-6 gold">🏆 Топ номеров</h3>
-            <div id="topNumbers" class="mt-3 space-y-2"></div>
+            <div class="menu-item" onclick="showSection('numbers')">
+                <i class="fas fa-phone"></i>
+                <span>📱 Номера</span>
+            </div>
+            <div class="menu-item" onclick="showSection('orders')">
+                <i class="fas fa-box"></i>
+                <span>📦 Заказы</span>
+            </div>
+            <div class="menu-item" onclick="showSection('users')">
+                <i class="fas fa-users"></i>
+                <span>👥 Пользователи</span>
+            </div>
+            <div class="menu-item" onclick="showSection('promo')">
+                <i class="fas fa-ticket"></i>
+                <span>🎫 Промокоды</span>
+            </div>
+            <div class="menu-item" onclick="showSection('banner')">
+                <i class="fas fa-image"></i>
+                <span>🖼️ Баннер</span>
+            </div>
+            <div class="menu-item" onclick="showSection('export')">
+                <i class="fas fa-download"></i>
+                <span>📎 Экспорт</span>
+            </div>
+            <div class="menu-item" onclick="showSection('logs')">
+                <i class="fas fa-history"></i>
+                <span>📋 Логи</span>
+            </div>
         </div>
     </div>
     
-    <!-- Пользователи -->
-    <div id="usersTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">👥 Пользователи</h2>
-            <input type="text" id="userSearch" placeholder="Поиск..." class="mb-4">
-            <div id="usersList" class="space-y-3 max-h-96 overflow-auto"></div>
+    <!-- Основной контент -->
+    <div class="main-content">
+        <!-- Дашборд -->
+        <div id="dashboardSection" class="section">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📊 Дашборд</h1>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card"><i class="fas fa-ruble-sign text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Выручка</p><p id="totalRevenue" class="text-2xl font-bold" style="color: #d4af37;">0 ₽</p></div>
+                <div class="stat-card"><i class="fas fa-shopping-cart text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Заказов</p><p id="totalOrders" class="text-2xl font-bold" style="color: #d4af37;">0</p></div>
+                <div class="stat-card"><i class="fas fa-users text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Пользователей</p><p id="totalUsers" class="text-2xl font-bold" style="color: #d4af37;">0</p></div>
+                <div class="stat-card"><i class="fas fa-chart-simple text-2xl" style="color: #d4af37;"></i><p class="text-gray-400 mt-2">Новых за неделю</p><p id="newOrdersWeek" class="text-2xl font-bold" style="color: #d4af37;">0</p></div>
+            </div>
+            <div class="data-card">
+                <canvas id="salesChart" height="200"></canvas>
+            </div>
+            <div class="data-card">
+                <h2><i class="fas fa-trophy"></i> Топ продаваемых номеров</h2>
+                <div id="topNumbers" class="space-y-2"></div>
+            </div>
         </div>
-    </div>
-    
-    <!-- Номера (ИСПРАВЛЕНО - показывает все номера с сайта) -->
-    <div id="numbersTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">📱 Управление номерами</h2>
+        
+        <!-- Номера -->
+        <div id="numbersSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📱 Управление номерами</h1>
             
-            <!-- Отладочная информация -->
-            <div class="debug-info" id="debugInfo">
-                🔍 Загрузка номеров...
+            <div class="data-card">
+                <h2><i class="fas fa-plus-circle"></i> Добавить новый номер</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <input type="text" id="newNum" placeholder="Номер (964-274-80-80)">
+                    <input type="number" id="newPrice" placeholder="Цена">
+                    <select id="newOp">
+                        <option value="МЕГАФОН">МЕГАФОН</option>
+                        <option value="БИЛАЙН">БИЛАЙН</option>
+                        <option value="МТС">МТС</option>
+                        <option value="TELE2">TELE2</option>
+                    </select>
+                    <select id="newCategory">
+                        <option value="Золотой">Золотой</option>
+                        <option value="Платиновый">Платиновый</option>
+                        <option value="VIP">VIP</option>
+                        <option value="Стандарт">Стандарт</option>
+                    </select>
+                </div>
+                <button onclick="addNumber()">➕ Добавить номер на сайт</button>
             </div>
             
-            <div class="bg-green-900/20 p-3 rounded mb-4">
-                <p class="text-sm text-green-400">✅ Здесь отображаются ВСЕ номера, которые есть на сайте!</p>
+            <div class="data-card">
+                <h2><i class="fas fa-filter"></i> Фильтрация</h2>
+                <div class="flex gap-4 flex-wrap">
+                    <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
+                    <select id="filterOperator" class="w-auto">
+                        <option value="">Все операторы</option>
+                        <option value="МЕГАФОН">МЕГАФОН</option>
+                        <option value="БИЛАЙН">БИЛАЙН</option>
+                        <option value="МТС">МТС</option>
+                        <option value="TELE2">TELE2</option>
+                    </select>
+                    <button onclick="refreshNumbers()" class="btn-info" style="width: auto;">🔄 Обновить</button>
+                </div>
             </div>
             
-            <!-- Форма добавления -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-                <input type="text" id="newNum" placeholder="Номер (например: 964-274-80-80)">
-                <input type="number" id="newPrice" placeholder="Цена (например: 800)">
-                <select id="newOp">
-                    <option value="МЕГАФОН">МЕГАФОН</option>
-                    <option value="БИЛАЙН">БИЛАЙН</option>
-                    <option value="МТС">МТС</option>
-                    <option value="TELE2">TELE2</option>
+            <div class="data-card">
+                <h2><i class="fas fa-list"></i> Список номеров</h2>
+                <div id="numbersList" class="max-h-96 overflow-auto"></div>
+            </div>
+        </div>
+        
+        <!-- Заказы -->
+        <div id="ordersSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📦 Управление заказами</h1>
+            <div class="data-card">
+                <h2><i class="fas fa-filter"></i> Фильтр по статусу</h2>
+                <select id="orderStatusFilter" class="w-auto mb-4">
+                    <option value="">Все статусы</option>
+                    <option value="new">🆕 Новый</option>
+                    <option value="processing">⚙️ В обработке</option>
+                    <option value="paid">💳 Оплачен</option>
+                    <option value="completed">✅ Выполнен</option>
                 </select>
-                <select id="newCategory">
-                    <option value="Золотой">Золотой</option>
-                    <option value="Платиновый">Платиновый</option>
-                    <option value="VIP">VIP</option>
-                </select>
-            </div>
-            <button onclick="addNumber()">➕ Добавить номер на сайт</button>
-            
-            <!-- Фильтры -->
-            <div class="flex gap-3 mt-6 mb-4">
-                <input type="text" id="filterNum" placeholder="Поиск по номеру..." class="flex-1">
-                <select id="filterOperator" class="w-auto">
-                    <option value="">Все операторы</option>
-                    <option value="МЕГАФОН">МЕГАФОН</option>
-                    <option value="БИЛАЙН">БИЛАЙН</option>
-                    <option value="МТС">МТС</option>
-                    <option value="TELE2">TELE2</option>
-                </select>
-                <button onclick="refreshNumbers()" class="bg-blue-600 text-white" style="width: auto; padding: 8px 16px;">🔄 Обновить</button>
-            </div>
-            
-            <!-- Список номеров -->
-            <div id="numbersList" class="space-y-2 max-h-96 overflow-auto"></div>
-        </div>
-    </div>
-    
-    <!-- Заказы -->
-    <div id="ordersTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">📦 Заказы</h2>
-            <select id="orderStatusFilter" class="w-auto mb-4">
-                <option value="">Все статусы</option>
-                <option value="new">🆕 Новый</option>
-                <option value="processing">⚙️ В обработке</option>
-                <option value="paid">💳 Оплачен</option>
-                <option value="completed">✅ Выполнен</option>
-            </select>
-            <div id="ordersList" class="space-y-3 max-h-96 overflow-auto"></div>
-        </div>
-    </div>
-    
-    <!-- Промокоды -->
-    <div id="promoTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">🎫 Промокоды</h2>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <input type="text" id="promoCode" placeholder="Код">
-                <select id="promoType"><option value="percent">% Скидка</option><option value="fixed">Фикс. скидка</option></select>
-                <input type="number" id="promoValue" placeholder="Значение">
-                <input type="date" id="promoExpiry">
-            </div>
-            <button onclick="addPromoCode()">Создать промокод</button>
-            <div id="promoList" class="mt-4 space-y-2"></div>
-        </div>
-    </div>
-    
-    <!-- Баннер -->
-    <div id="bannerTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">🖼️ Баннер на сайте</h2>
-            <div class="bg-yellow-900/20 p-3 rounded mb-4">
-                <p class="text-sm">Текущий баннер: <span id="currentBannerText" class="gold font-bold">—</span></p>
-            </div>
-            <input type="text" id="bannerTitle" placeholder="Заголовок баннера">
-            <input type="text" id="bannerSub" placeholder="Подзаголовок">
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="updateBanner()">🚀 Опубликовать</button>
-                <button onclick="clearBanner()" class="bg-red-600">🗑️ Убрать</button>
+                <div id="ordersList" class="space-y-3 max-h-96 overflow-auto"></div>
             </div>
         </div>
-    </div>
-    
-    <!-- Экспорт -->
-    <div id="exportTab" class="tab-content">
-        <div class="card">
-            <h2 class="text-xl font-bold gold mb-4">📎 Экспорт данных</h2>
-            <div class="grid grid-cols-3 gap-3">
-                <button onclick="exportUsers()" class="bg-blue-600">Пользователи</button>
-                <button onclick="exportOrders()" class="bg-green-600">Заказы</button>
-                <button onclick="exportNumbers()" class="bg-purple-600">Номера</button>
+        
+        <!-- Пользователи -->
+        <div id="usersSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">👥 Управление пользователями</h1>
+            <div class="data-card">
+                <h2><i class="fas fa-search"></i> Поиск</h2>
+                <input type="text" id="userSearch" placeholder="Поиск по имени или email...">
+                <div id="usersList" class="mt-4 space-y-3 max-h-96 overflow-auto"></div>
+            </div>
+        </div>
+        
+        <!-- Промокоды -->
+        <div id="promoSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">🎫 Промокоды и скидки</h1>
+            <div class="data-card">
+                <h2><i class="fas fa-plus-circle"></i> Создать промокод</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <input type="text" id="promoCode" placeholder="Код промокода">
+                    <select id="promoType">
+                        <option value="percent">Процентная скидка (%)</option>
+                        <option value="fixed">Фиксированная скидка (₽)</option>
+                    </select>
+                    <input type="number" id="promoValue" placeholder="Значение скидки">
+                    <input type="date" id="promoExpiry">
+                </div>
+                <button onclick="addPromoCode()">🎫 Создать промокод</button>
+            </div>
+            <div class="data-card">
+                <h2><i class="fas fa-list"></i> Активные промокоды</h2>
+                <div id="promoList" class="space-y-2"></div>
+            </div>
+        </div>
+        
+        <!-- Баннер -->
+        <div id="bannerSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">🖼️ Баннер на сайте</h1>
+            <div class="data-card">
+                <div class="bg-yellow-900/20 p-4 rounded-xl mb-4">
+                    <p class="text-sm">Текущий баннер: <span id="currentBannerText" class="gold font-bold">—</span></p>
+                </div>
+                <input type="text" id="bannerTitle" placeholder="Заголовок баннера" class="mb-3">
+                <input type="text" id="bannerSub" placeholder="Подзаголовок" class="mb-4">
+                <div class="flex gap-3">
+                    <button onclick="updateBanner()">🚀 Опубликовать</button>
+                    <button onclick="clearBanner()" class="btn-danger">🗑️ Убрать баннер</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Экспорт -->
+        <div id="exportSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📎 Экспорт данных</h1>
+            <div class="data-card">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="exportUsers()" class="btn-info">👥 Экспорт пользователей</button>
+                    <button onclick="exportOrders()" class="btn-info">📦 Экспорт заказов</button>
+                    <button onclick="exportNumbers()" class="btn-info">📱 Экспорт номеров</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Логи -->
+        <div id="logsSection" class="section" style="display: none;">
+            <h1 class="text-3xl font-bold mb-6" style="color: #d4af37;">📋 Логи действий</h1>
+            <div class="data-card">
+                <div id="logsList" class="space-y-2 max-h-96 overflow-auto"></div>
+                <button onclick="clearLogs()" class="btn-danger mt-4">🗑️ Очистить логи</button>
             </div>
         </div>
     </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
-    // Firebase
     firebase.initializeApp({
         apiKey: "AIzaSyCRjRJkH4dPxvyYD-37emejFvK11g6hZ44",
         databaseURL: "https://nnnmb-a0b52-default-rtdb.firebaseio.com"
@@ -208,75 +477,53 @@
     let allOrders = [];
     let allUsers = [];
     
-    // ВХОД
+    // Вход
     window.checkLogin = function() {
-        var pwd = document.getElementById('adminPassword').value;
+        const pwd = document.getElementById('adminPassword').value;
         if(pwd === 'admin2024') {
-            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
+            addLog('✅ Вход в админ-панель');
             initAll();
         } else {
             alert('❌ Неверный пароль! Пароль: admin2024');
+            addLog('❌ Неудачная попытка входа');
         }
     };
     
-    document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+    document.getElementById('adminPassword')?.addEventListener('keypress', function(e) {
         if(e.key === 'Enter') checkLogin();
     });
     
-    function showSuccessMsg(text) {
-        const msgDiv = document.getElementById('successMsg');
-        msgDiv.innerText = text;
-        msgDiv.style.display = 'block';
-        setTimeout(() => { msgDiv.style.display = 'none'; }, 3000);
+    function addLog(action) { db.ref('logs').push({ action, date: new Date().toLocaleString() }); }
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.innerText = msg;
+        toast.style.background = isError ? '#dc2626' : '#10b981';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
     
-    function initAll() {
-        loadStats();
-        loadUsers();
-        loadNumbers();
-        loadOrders();
-        loadPromoCodes();
-        loadCurrentBanner();
-    }
+    function initAll() { loadStats(); loadUsers(); loadNumbers(); loadOrders(); loadPromoCodes(); loadCurrentBanner(); loadLogs(); }
     
-    function showTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabName + 'Tab').classList.add('active');
-        event.target.classList.add('active');
-    }
+    // Переключение секций
+    window.showSection = function(section) {
+        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+        document.getElementById(section + 'Section').style.display = 'block';
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        if(section === 'numbers') refreshNumbers();
+        if(section === 'dashboard') loadStats();
+    };
     
-    // ============ ЗАГРУЗКА НОМЕРОВ (ПРЯМО ИЗ FIREBASE) ============
+    // Загрузка номеров
     function loadNumbers() {
-        const debugDiv = document.getElementById('debugInfo');
-        debugDiv.innerHTML = '🔄 Загрузка номеров из Firebase...';
-        
         db.ref('inventory').on('value', (snapshot) => {
             allNumbers = [];
             const data = snapshot.val();
-            
-            if(data) {
-                // Получаем все номера из Firebase
-                Object.keys(data).forEach(key => {
-                    allNumbers.push({ 
-                        id: key, 
-                        ...data[key] 
-                    });
-                });
-                debugDiv.innerHTML = `✅ Загружено номеров: ${allNumbers.length} шт.`;
-                debugDiv.style.background = 'rgba(16,185,129,0.2)';
-            } else {
-                debugDiv.innerHTML = '⚠️ В базе данных нет номеров. Добавьте первый номер!';
-                debugDiv.style.background = 'rgba(245,158,11,0.2)';
-            }
-            
+            if(data) { Object.keys(data).forEach(key => { allNumbers.push({ id: key, ...data[key] }); }); }
             renderNumbers();
-            console.log('📱 Загружены номера:', allNumbers);
-        }, (error) => {
-            debugDiv.innerHTML = '❌ Ошибка загрузки: ' + error.message;
-            debugDiv.style.background = 'rgba(220,38,38,0.2)';
-            console.error('Ошибка загрузки номеров:', error);
+            console.log('Загружено номеров:', allNumbers.length);
         });
     }
     
@@ -285,288 +532,126 @@
         const opFilter = document.getElementById('filterOperator')?.value || '';
         const container = document.getElementById('numbersList');
         if(!container) return;
-        
-        let filtered = allNumbers.filter(n => {
-            const numMatch = n.num?.toLowerCase().includes(search);
-            const opMatch = opFilter === '' || n.op === opFilter;
-            return numMatch && opMatch;
-        });
-        
-        if(filtered.length === 0) {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров. Добавьте первый!</div>';
-            return;
-        }
-        
+        let filtered = allNumbers.filter(n => n.num?.toLowerCase().includes(search) && (opFilter === '' || n.op === opFilter));
+        if(filtered.length === 0) { container.innerHTML = '<div class="text-center text-gray-500 py-8">📭 Нет номеров</div>'; return; }
         container.innerHTML = filtered.map(n => `
-            <div class="number-card">
+            <div class="number-item">
                 <div>
-                    <span class="gold font-bold">${n.op || '?'}</span>
-                    <span class="text-sm text-gray-400 ml-2">${n.category || 'Стандарт'}</span>
-                    <p class="text-lg font-bold mt-1">+7 ${n.num}</p>
-                    <p class="gold font-bold">${Number(n.price).toLocaleString()} ₽</p>
-                    <p class="text-xs text-gray-500">ID: ${n.id?.slice(0,8)}...</p>
+                    <span class="badge badge-gold">${n.op || '?'}</span>
+                    <span class="badge badge-blue ml-2">${n.category || 'Стандарт'}</span>
+                    <p class="text-xl font-bold mt-2">+7 ${n.num}</p>
+                    <p class="text-2xl font-bold" style="color: #d4af37;">${Number(n.price).toLocaleString()} ₽</p>
+                    <p class="text-xs text-gray-500 mt-1">ID: ${n.id?.slice(0,8)}...</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="editNumber('${n.id}')" class="edit-btn">✏️ Ред.</button>
-                    <button onclick="deleteNumber('${n.id}')" class="delete-btn">🗑️ Удалить</button>
+                    <button onclick="editNumber('${n.id}')" class="btn-info" style="padding: 8px 16px;">✏️ Редактировать</button>
+                    <button onclick="deleteNumber('${n.id}')" class="btn-danger" style="padding: 8px 16px;">🗑️ Удалить</button>
                 </div>
             </div>
         `).join('');
     }
     
-    // Обновить список номеров вручную
-    window.refreshNumbers = function() {
-        showSuccessMsg('🔄 Обновление списка...');
-        loadNumbers();
-    };
+    window.refreshNumbers = function() { loadNumbers(); showToast('🔄 Список обновлен'); };
     
-    // Добавление номера
     window.addNumber = function() {
         const num = document.getElementById('newNum').value.trim();
         const price = document.getElementById('newPrice').value;
         const op = document.getElementById('newOp').value;
         const category = document.getElementById('newCategory').value;
-        
-        if(!num) {
-            alert('❌ Введите номер!');
-            return;
-        }
-        if(!price || price <= 0) {
-            alert('❌ Введите корректную цену!');
-            return;
-        }
-        
-        const newNumber = {
-            num: num,
-            price: parseInt(price),
-            op: op,
-            category: category,
-            status: 'active',
-            createdAt: new Date().toLocaleString()
-        };
-        
-        db.ref('inventory').push(newNumber).then(() => {
-            showSuccessMsg(`✅ Номер +7 ${num} добавлен на сайт!`);
+        if(!num) { alert('Введите номер!'); return; }
+        if(!price || price <= 0) { alert('Введите цену!'); return; }
+        db.ref('inventory').push({ num, price: parseInt(price), op, category, status: 'active', createdAt: new Date().toLocaleString() }).then(() => {
+            showToast(`✅ Номер +7 ${num} добавлен`);
             document.getElementById('newNum').value = '';
             document.getElementById('newPrice').value = '';
-            // Не нужно вызывать loadNumbers - сработает on('value')
-        }).catch(err => {
-            alert('❌ Ошибка при добавлении: ' + err.message);
+            addLog(`Добавлен номер +7 ${num}`);
         });
     };
     
-    // Редактирование номера
     window.editNumber = function(id) {
         const item = allNumbers.find(n => n.id === id);
-        if(!item) return;
-        
-        const newPrice = prompt('Новая цена (в рублях):', item.price);
-        if(newPrice && !isNaN(newPrice) && newPrice > 0) {
-            db.ref(`inventory/${id}/price`).set(parseInt(newPrice));
-            showSuccessMsg(`✅ Цена обновлена на ${Number(newPrice).toLocaleString()} ₽`);
-        }
-        
-        const newNum = prompt('Новый номер (без +7):', item.num);
-        if(newNum && newNum.trim()) {
-            db.ref(`inventory/${id}/num`).set(newNum.trim());
-            showSuccessMsg(`✅ Номер обновлен на +7 ${newNum}`);
-        }
+        const newPrice = prompt('Новая цена (₽):', item.price);
+        if(newPrice && !isNaN(newPrice)) db.ref(`inventory/${id}/price`).set(parseInt(newPrice));
+        const newNum = prompt('Новый номер:', item.num);
+        if(newNum && newNum.trim()) db.ref(`inventory/${id}/num`).set(newNum.trim());
+        showToast('✅ Номер обновлен');
     };
     
-    // Удаление номера
-    window.deleteNumber = function(id) {
-        if(confirm('Удалить номер с сайта?')) {
-            db.ref(`inventory/${id}`).remove();
-            showSuccessMsg('✅ Номер удален с сайта');
-        }
-    };
+    window.deleteNumber = function(id) { if(confirm('Удалить номер?')) db.ref(`inventory/${id}`).remove(); };
     
-    // ============ СТАТИСТИКА ============
+    // Статистика
     async function loadStats() {
         const snapshot = await db.ref('orders').once('value');
-        let orders = [];
-        snapshot.forEach(o => orders.push(o.val()));
-        
+        let orders = []; snapshot.forEach(o => orders.push(o.val()));
         const revenue = orders.reduce((s,o) => s + (parseInt(o.price)||0), 0);
         document.getElementById('totalRevenue').innerText = revenue.toLocaleString() + ' ₽';
         document.getElementById('totalOrders').innerText = orders.length;
-        
         const usersSnap = await db.ref('users').once('value');
         let uc = 0; usersSnap.forEach(() => uc++);
         document.getElementById('totalUsers').innerText = uc;
-        
         let weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
         document.getElementById('newOrdersWeek').innerText = orders.filter(o => new Date(o.date) > weekAgo).length;
         
-        // График
-        const days = [];
-        const dailyRev = [];
+        const days = [], dailyRev = [];
         for(let i=6; i>=0; i--) { let d = new Date(); d.setDate(d.getDate()-i); days.push(d.toLocaleDateString()); dailyRev.push(0); }
-        orders.forEach(o => {
-            let d = new Date(o.date).toLocaleDateString();
-            let idx = days.indexOf(d);
-            if(idx !== -1) dailyRev[idx] += parseInt(o.price)||0;
-        });
+        orders.forEach(o => { let d = new Date(o.date).toLocaleDateString(); let idx = days.indexOf(d); if(idx !== -1) dailyRev[idx] += parseInt(o.price)||0; });
         if(salesChart) salesChart.destroy();
         const ctx = document.getElementById('salesChart');
-        if(ctx) {
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: days, datasets: [{ label: 'Выручка (₽)', data: dailyRev, borderColor: '#d4af37', fill: true }] }
-            });
-        }
+        if(ctx) salesChart = new Chart(ctx, { type: 'line', data: { labels: days, datasets: [{ label: 'Выручка (₽)', data: dailyRev, borderColor: '#d4af37', fill: true, backgroundColor: 'rgba(212,175,55,0.1)' }] } });
         
-        // Топ номеров
         const top = {};
         orders.forEach(o => { top[o.item] = (top[o.item]||0) + 1; });
         const topArr = Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        document.getElementById('topNumbers').innerHTML = topArr.map(([num, cnt]) => `<div class="bg-white/10 p-2 rounded">📱 +7 ${num} — продано ${cnt} раз</div>`).join('');
+        document.getElementById('topNumbers').innerHTML = topArr.map(([num, cnt]) => `<div class="bg-white/5 p-3 rounded">📱 +7 ${num} — продано ${cnt} раз</div>`).join('');
     }
     
-    // ============ ПОЛЬЗОВАТЕЛИ ============
-    function loadUsers() {
-        db.ref('users').on('value', s => {
-            allUsers = [];
-            s.forEach(c => allUsers.push({ id: c.key, ...c.val() }));
-            renderUsers();
-        });
-    }
-    
+    // Пользователи
+    function loadUsers() { db.ref('users').on('value', s => { allUsers = []; s.forEach(c => allUsers.push({ id: c.key, ...c.val() })); renderUsers(); }); }
     function renderUsers() {
         const search = document.getElementById('userSearch')?.value.toLowerCase() || '';
         const container = document.getElementById('usersList');
         if(!container) return;
-        let filtered = allUsers.filter(u => (u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search)));
-        container.innerHTML = filtered.map(u => `
-            <div class="bg-white/10 p-3 rounded-lg flex justify-between items-center">
-                <div><p class="font-bold">${u.name || 'Без имени'}</p><p class="text-sm">📧 ${u.email || '-'} | 📞 ${u.phone || '-'}</p><p class="text-xs text-gray-400">📅 ${u.registeredAt || '-'}</p></div>
-                <button onclick="deleteUser('${u.id}')" class="delete-btn">🗑️</button>
-            </div>
-        `).join('');
+        let filtered = allUsers.filter(u => u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search));
+        container.innerHTML = filtered.map(u => `<div class="bg-white/5 p-4 rounded-lg flex justify-between items-center flex-wrap gap-3"><div><p class="font-bold">${u.name || 'Без имени'}</p><p class="text-sm">📧 ${u.email || '-'} | 📞 ${u.phone || '-'}</p><p class="text-xs text-gray-400">📅 ${u.registeredAt || '-'}</p></div><button onclick="deleteUser('${u.id}')" class="btn-danger" style="padding: 6px 12px;">Удалить</button></div>`).join('');
     }
-    
     window.deleteUser = function(id) { if(confirm('Удалить пользователя?')) db.ref(`users/${id}`).remove(); };
     
-    // ============ ЗАКАЗЫ ============
-    function loadOrders() {
-        db.ref('orders').on('value', s => {
-            allOrders = [];
-            s.forEach(c => allOrders.push({ id: c.key, ...c.val() }));
-            renderOrders();
-            loadStats();
-        });
-    }
-    
+    // Заказы
+    function loadOrders() { db.ref('orders').on('value', s => { allOrders = []; s.forEach(c => allOrders.push({ id: c.key, ...c.val() })); renderOrders(); loadStats(); }); }
     function renderOrders() {
         const statusFilter = document.getElementById('orderStatusFilter')?.value || '';
         const container = document.getElementById('ordersList');
         if(!container) return;
         let filtered = statusFilter ? allOrders.filter(o => o.status === statusFilter) : allOrders;
-        if(filtered.length === 0) { 
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">Нет заказов</div>'; 
-            return; 
-        }
-        container.innerHTML = filtered.map(o => `
-            <div class="bg-white/10 p-3 rounded-lg">
-                <div class="flex justify-between items-start flex-wrap">
-                    <div>
-                        <p class="font-bold gold">${o.name}</p>
-                        <p class="text-sm">📞 ${o.phone}</p>
-                        <p class="text-sm">🎁 Номер: +7 ${o.item}</p>
-                        <p class="gold font-bold">💰 ${Number(o.price).toLocaleString()} ₽</p>
-                        <p class="text-xs text-gray-400">📅 ${o.date || ''}</p>
-                    </div>
-                    <div>
-                        <select onchange="updateStatus('${o.id}', this.value)" class="bg-gray-800 p-2 rounded text-sm">
-                            <option value="new" ${o.status==='new'?'selected':''}>🆕 Новый</option>
-                            <option value="processing" ${o.status==='processing'?'selected':''}>⚙️ В обработке</option>
-                            <option value="paid" ${o.status==='paid'?'selected':''}>💳 Оплачен</option>
-                            <option value="completed" ${o.status==='completed'?'selected':''}>✅ Выполнен</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        if(filtered.length === 0) { container.innerHTML = '<div class="text-center text-gray-500 py-8">Нет заказов</div>'; return; }
+        container.innerHTML = filtered.map(o => `<div class="bg-white/5 p-4 rounded-lg"><div class="flex justify-between flex-wrap gap-3"><div><p class="font-bold gold">${o.name}</p><p>📞 ${o.phone}</p><p>🎁 +7 ${o.item}</p><p class="gold font-bold">💰 ${Number(o.price).toLocaleString()} ₽</p><p class="text-xs text-gray-400">📅 ${o.date || ''}</p></div><div><select onchange="updateStatus('${o.id}', this.value)" class="bg-gray-800 p-2 rounded"><option value="new" ${o.status==='new'?'selected':''}>🆕 Новый</option><option value="processing" ${o.status==='processing'?'selected':''}>⚙️ В обработке</option><option value="paid" ${o.status==='paid'?'selected':''}>💳 Оплачен</option><option value="completed" ${o.status==='completed'?'selected':''}>✅ Выполнен</option></select></div></div></div>`).join('');
     }
+    window.updateStatus = function(id, status) { db.ref(`orders/${id}/status`).set(status); showToast('✅ Статус обновлен'); };
     
-    window.updateStatus = function(id, status) { 
-        db.ref(`orders/${id}/status`).set(status);
-        showSuccessMsg(`✅ Статус заказа изменен`);
-    };
-    
-    // ============ ПРОМОКОДЫ ============
-    function loadPromoCodes() {
-        db.ref('promocodes').on('value', s => {
-            const container = document.getElementById('promoList');
-            if(!container) return;
-            container.innerHTML = '';
-            s.forEach(c => {
-                const p = c.val();
-                container.innerHTML += `<div class="bg-white/10 p-2 rounded flex justify-between"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'}</span><button onclick="deletePromo('${c.key}')" class="delete-btn">🗑️</button></div>`;
-            });
-        });
-    }
-    
-    window.addPromoCode = function() {
-        const code = document.getElementById('promoCode').value;
-        const type = document.getElementById('promoType').value;
-        const value = document.getElementById('promoValue').value;
-        if(!code || !value) return alert('Заполните поля');
-        db.ref('promocodes').push({ code, type, value });
-        showSuccessMsg(`✅ Промокод ${code} создан`);
-        document.getElementById('promoCode').value = '';
-        document.getElementById('promoValue').value = '';
-    };
-    
+    // Промокоды
+    function loadPromoCodes() { db.ref('promocodes').on('value', s => { const container = document.getElementById('promoList'); if(!container) return; container.innerHTML = ''; s.forEach(c => { const p = c.val(); container.innerHTML += `<div class="bg-white/5 p-3 rounded flex justify-between items-center"><span><b>${p.code}</b> - ${p.type === 'percent' ? p.value+'%' : p.value+'₽'}</span><button onclick="deletePromo('${c.key}')" class="btn-danger" style="padding: 4px 12px;">Удалить</button></div>`; }); }); }
+    window.addPromoCode = function() { const code = document.getElementById('promoCode').value, type = document.getElementById('promoType').value, value = document.getElementById('promoValue').value; if(!code || !value) return alert('Заполните поля'); db.ref('promocodes').push({ code, type, value }); showToast(`✅ Промокод ${code} создан`); document.getElementById('promoCode').value = ''; document.getElementById('promoValue').value = ''; };
     window.deletePromo = function(id) { db.ref(`promocodes/${id}`).remove(); };
     
-    // ============ БАННЕР ============
-    function loadCurrentBanner() {
-        db.ref('settings/banner').on('value', s => {
-            const banner = s.val();
-            const el = document.getElementById('currentBannerText');
-            if(el) el.innerText = banner && banner.title ? `${banner.title} - ${banner.sub || ''}` : 'Не установлен';
-        });
-    }
+    // Баннер
+    function loadCurrentBanner() { db.ref('settings/banner').on('value', s => { const banner = s.val(); const el = document.getElementById('currentBannerText'); if(el) el.innerText = banner?.title ? `${banner.title} - ${banner.sub || ''}` : 'Не установлен'; }); }
+    window.updateBanner = function() { const title = document.getElementById('bannerTitle').value, sub = document.getElementById('bannerSub').value; if(!title) return alert('Введите заголовок'); db.ref('settings/banner').set({ title, sub }); showToast('✅ Баннер обновлен'); document.getElementById('bannerTitle').value = ''; document.getElementById('bannerSub').value = ''; };
+    window.clearBanner = function() { if(confirm('Убрать баннер?')) db.ref('settings/banner').remove(); };
     
-    window.updateBanner = function() {
-        const title = document.getElementById('bannerTitle').value;
-        const sub = document.getElementById('bannerSub').value;
-        if(!title) return alert('Введите заголовок');
-        db.ref('settings/banner').set({ title, sub });
-        showSuccessMsg('✅ Баннер обновлен на сайте!');
-        document.getElementById('bannerTitle').value = '';
-        document.getElementById('bannerSub').value = '';
-    };
+    // Экспорт
+    window.exportUsers = function() { const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Пользователи'); XLSX.writeFile(wb, 'users.xlsx'); showToast('✅ Экспорт выполнен'); };
+    window.exportOrders = function() { const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Заказы'); XLSX.writeFile(wb, 'orders.xlsx'); };
+    window.exportNumbers = function() { const ws = XLSX.utils.json_to_sheet(allNumbers.map(n => ({ Номер: n.num, Цена: n.price, Оператор: n.op, Категория: n.category }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Номера'); XLSX.writeFile(wb, 'numbers.xlsx'); };
     
-    window.clearBanner = function() {
-        if(confirm('Убрать баннер с сайта?')) {
-            db.ref('settings/banner').remove();
-            showSuccessMsg('✅ Баннер удален');
-        }
-    };
-    
-    // ============ ЭКСПОРТ ============
-    window.exportUsers = function() {
-        const ws = XLSX.utils.json_to_sheet(allUsers.map(u => ({ Имя: u.name, Email: u.email, Телефон: u.phone })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Пользователи'); XLSX.writeFile(wb, 'users.xlsx');
-    };
-    window.exportOrders = function() {
-        const ws = XLSX.utils.json_to_sheet(allOrders.map(o => ({ Имя: o.name, Телефон: o.phone, Номер: o.item, Цена: o.price, Статус: o.status })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Заказы'); XLSX.writeFile(wb, 'orders.xlsx');
-    };
-    window.exportNumbers = function() {
-        const ws = XLSX.utils.json_to_sheet(allNumbers.map(n => ({ Номер: n.num, Цена: n.price, Оператор: n.op, Категория: n.category })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Номера'); XLSX.writeFile(wb, 'numbers.xlsx');
-    };
+    // Логи
+    function loadLogs() { db.ref('logs').limitToLast(50).on('value', s => { const container = document.getElementById('logsList'); if(!container) return; container.innerHTML = ''; const logs = []; s.forEach(c => logs.unshift(c.val())); logs.forEach(log => { container.innerHTML += `<div class="bg-white/5 p-2 rounded text-sm"><span class="gold">${log.date}</span> - ${log.action}</div>`; }); }); }
+    window.clearLogs = function() { if(confirm('Очистить все логи?')) db.ref('logs').remove(); };
     
     // Фильтры
     document.getElementById('filterNum')?.addEventListener('input', () => renderNumbers());
     document.getElementById('filterOperator')?.addEventListener('change', () => renderNumbers());
     document.getElementById('userSearch')?.addEventListener('input', () => renderUsers());
     document.getElementById('orderStatusFilter')?.addEventListener('change', () => renderOrders());
-    
-    window.showTab = showTab;
 </script>
 </body>
 </html>
