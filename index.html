@@ -18,7 +18,6 @@
             color: #F1F5F9;
             overflow-x: hidden;
         }
-        /* Sidebar */
         .sidebar {
             position: fixed;
             left: 0;
@@ -57,7 +56,6 @@
             background: #334155;
             color: #F1F5F9;
         }
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 24px 32px;
@@ -74,7 +72,7 @@
         .page-header h1 { font-size: 28px; font-weight: 700; }
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 32px;
         }
@@ -114,8 +112,6 @@
         .badge-success { background: #10B981; color: white; }
         .badge-warning { background: #F59E0B; color: #0F172A; }
         .badge-danger { background: #EF4444; color: white; }
-        .badge-banned { background: #DC2626; color: white; }
-        .badge-temp { background: #F97316; color: white; }
         .btn-icon {
             background: none;
             border: none;
@@ -123,7 +119,6 @@
             cursor: pointer;
             padding: 6px;
             border-radius: 8px;
-            transition: 0.2s;
         }
         .btn-icon:hover { background: #334155; color: white; }
         .btn-primary {
@@ -150,7 +145,6 @@
             padding: 8px 16px;
             border-radius: 30px;
             cursor: pointer;
-            font-weight: 600;
         }
         .modal {
             display: none;
@@ -301,14 +295,31 @@
 </div>
 
 <script>
-    // ========== DATA ==========
-    let products = JSON.parse(localStorage.getItem('sim_products')) || [];
-    let users = JSON.parse(localStorage.getItem('sim_users')) || [];
-    let orders = JSON.parse(localStorage.getItem('sim_orders')) || [];
-    let reviews = JSON.parse(localStorage.getItem('sim_reviews')) || {};
+    // ========== INITIAL DEMO DATA ==========
+    let products = JSON.parse(localStorage.getItem('sim_products')) || [
+        { id: 1, name: "iPhone 15 Pro", price: 99990, oldPrice: 109990, image: "https://images.pexels.com/photos/699122/pexels-photo-699122.jpeg?w=200&h=150&fit=crop", category: "Смартфоны", brand: "Apple", specs: [{key:"Экран",value:"6.1″"},{key:"Память",value:"256GB"}] },
+        { id: 2, name: "Samsung Galaxy S24", price: 89990, oldPrice: null, image: "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg?w=200&h=150&fit=crop", category: "Смартфоны", brand: "Samsung", specs: [] },
+        { id: 3, name: "Xiaomi Redmi Note 13", price: 18990, oldPrice: 24990, image: "https://images.pexels.com/photos/47261/pexels-photo-47261.jpeg?w=200&h=150&fit=crop", category: "Смартфоны", brand: "Xiaomi", specs: [] },
+        { id: 4, name: "JBL Tune 510BT", price: 3990, oldPrice: 5990, image: "https://images.pexels.com/photos/3394659/pexels-photo-3394659.jpeg?w=200&h=150&fit=crop", category: "Наушники", brand: "JBL", specs: [] }
+    ];
     
-    // Ban system
-    let bannedUsers = JSON.parse(localStorage.getItem('sim_banned')) || []; // { userId, reason, until (timestamp), permanent }
+    let users = JSON.parse(localStorage.getItem('sim_users')) || [
+        { id: 1, name: "Алексей Иванов", phone: "+7 999 123-45-67", createdAt: Date.now() - 86400000 },
+        { id: 2, name: "Мария Петрова", phone: "+7 999 234-56-78", createdAt: Date.now() - 172800000 },
+        { id: 3, name: "Дмитрий Сидоров", phone: "+7 999 345-67-89", createdAt: Date.now() - 259200000 }
+    ];
+    
+    let orders = JSON.parse(localStorage.getItem('sim_orders')) || [
+        { id: 1001, userId: 1, customerName: "Алексей Иванов", customerPhone: "+7 999 123-45-67", address: "Москва, ул. Тверская 1", total: 99990, status: "Новый", items: [{name:"iPhone 15 Pro",qty:1}], createdAt: Date.now() - 3600000 },
+        { id: 1002, userId: 2, customerName: "Мария Петрова", customerPhone: "+7 999 234-56-78", address: "СПб, Невский пр. 10", total: 18990, status: "В обработке", items: [{name:"Xiaomi Redmi Note 13",qty:1}], createdAt: Date.now() - 86400000 }
+    ];
+    
+    let reviews = JSON.parse(localStorage.getItem('sim_reviews')) || {
+        1: [{ userName: "Алексей", rating: 5, text: "Отличный телефон! Быстрая доставка", photos: [], date: "15.04.2026" }],
+        2: [{ userName: "Мария", rating: 4, text: "Хороший смартфон, но дороговато", photos: [], date: "14.04.2026" }]
+    };
+    
+    let bannedUsers = JSON.parse(localStorage.getItem('sim_banned')) || [];
 
     let currentTab = 'dashboard';
     let currentEditProductId = null;
@@ -341,9 +352,7 @@
     function banUser(userId, hours = null) {
         let user = users.find(u => u.id === userId);
         if(!user) return;
-        let existing = bannedUsers.find(b => b.userId === userId);
-        if(existing) bannedUsers = bannedUsers.filter(b => b.userId !== userId);
-        
+        bannedUsers = bannedUsers.filter(b => b.userId !== userId);
         if(hours === null) {
             bannedUsers.push({ userId, reason: "Навсегда заблокирован", permanent: true });
         } else {
@@ -372,6 +381,7 @@
 
     // ========== DASHBOARD ==========
     function renderDashboard() {
+        document.getElementById('actionBtn').style.display = 'none';
         let totalProducts = products.length;
         let totalUsers = users.length;
         let totalOrders = orders.length;
@@ -388,18 +398,16 @@
                 <div class="stat-card"><div class="info"><h3>${totalRevenue.toLocaleString()} ₽</h3><p>Выручка</p></div><i class="fas fa-rouble"></i></div>
                 <div class="stat-card"><div class="info"><h3>${pendingOrders}</h3><p>Новых заказов</p></div><i class="fas fa-clock"></i></div>
             </div>
-            <div class="table-container"><h3 style="margin-bottom:16px;">📦 Последние заказы</h3></table><th>ID</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th></th></tr>
-                ${orders.slice(0,5).map(o => {
-                    let isBanned = isUserBanned(o.userId);
-                    return `<tr class="${isBanned ? 'banned-row' : ''}">
-                        <td>#${o.id}</td><td>${o.customerName}${isBanned ? ' ⚠️ забанен' : ''}</td>
-                        <td>${o.total.toLocaleString()} ₽</td>
-                        <td><span class="badge ${o.status === 'Новый' ? 'badge-warning' : 'badge-success'}">${o.status}</span></td>
-                        <td><button class="btn-icon" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i></button></td>
-                    </tr>`;
-                }).join('')}
-                ${orders.length === 0 ? '<tr><td colspan="5" class="empty-state">Нет заказов</td></tr>' : ''}
-            </table></div>
+            <div class="table-container">
+                <h3 style="margin-bottom:16px;">📦 Последние заказы</h3>
+                <table>
+                    <thead><tr><th>ID</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th></th></tr></thead>
+                    <tbody>
+                        ${orders.slice(0,5).map(o => `<tr><td>#${o.id}</td><td>${o.customerName}</td><td>${o.total.toLocaleString()} ₽</td><td><span class="badge ${o.status === 'Новый' ? 'badge-warning' : 'badge-success'}">${o.status}</span></td><td><button class="btn-icon" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i></button></td></tr>`).join('')}
+                        ${orders.length === 0 ? '<tr><td colspan="5" class="empty-state">Нет заказов</td></tr>' : ''}
+                    </tbody>
+                </table>
+            </div>
         `;
     }
 
@@ -411,10 +419,18 @@
         
         document.getElementById('contentArea').innerHTML = `
             <div class="filter-bar">
-                <input type="text" id="searchProduct" placeholder="Поиск товара..." onkeyup="filterProducts()">
-                <select id="categoryFilter" onchange="filterProducts()"><option value="">Все категории</option><option>Смартфоны</option><option>Наушники</option><option>Зарядки</option><option>Power Bank</option><option>Гаджеты</option></select>
+                <input type="text" id="searchProduct" placeholder="🔍 Поиск товара..." onkeyup="filterProducts()">
+                <select id="categoryFilter" onchange="filterProducts()">
+                    <option value="">Все категории</option>
+                    <option>Смартфоны</option><option>Наушники</option><option>Зарядки</option><option>Power Bank</option><option>Гаджеты</option>
+                </select>
             </div>
-            <div class="table-container"><table id="productsTable"><thead><tr><th>Фото</th><th>Название</th><th>Цена</th><th>Категория</th><th>Бренд</th><th>Действия</th></tr></thead><tbody id="productsTableBody"></tbody></table></div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Фото</th><th>Название</th><th>Цена</th><th>Категория</th><th>Бренд</th><th>Действия</th></tr></thead>
+                    <tbody id="productsTableBody"></tbody>
+                </table>
+            </div>
         `;
         filterProducts();
     }
@@ -435,16 +451,17 @@
                 <td>${p.category}</td>
                 <td><input type="text" value="${p.brand}" id="brand_${p.id}" style="background:#334155; border:1px solid #475569; border-radius:8px; padding:4px;"></td>
                 <td>
-                    <button class="btn-icon" onclick="updateProductPrice(${p.id})"><i class="fas fa-save"></i></button>
-                    <button class="btn-icon" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon" onclick="changeProductImage(${p.id})"><i class="fas fa-image"></i></button>
-                    <button class="btn-icon" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                    <button class="btn-icon" onclick="updateProduct(${p.id})" title="Сохранить цену/бренд"><i class="fas fa-save"></i></button>
+                    <button class="btn-icon" onclick="editProduct(${p.id})" title="Редактировать"><i class="fas fa-edit"></i></button>
+                    <button class="btn-icon" onclick="changeProductImage(${p.id})" title="Сменить фото"><i class="fas fa-image"></i></button>
+                    <button class="btn-icon" onclick="deleteProduct(${p.id})" title="Удалить"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `).join('');
+        if(filtered.length === 0) document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Нет товаров</td></tr>';
     }
 
-    function updateProductPrice(id) {
+    function updateProduct(id) {
         let newPrice = parseInt(document.getElementById(`price_${id}`).value);
         let newBrand = document.getElementById(`brand_${id}`).value;
         let product = products.find(p => p.id === id);
@@ -453,7 +470,6 @@
             product.brand = newBrand;
             saveAll();
             showToast("✅ Цена и бренд обновлены");
-            filterProducts();
         }
     }
 
@@ -523,8 +539,15 @@
     function renderUsers() {
         document.getElementById('actionBtn').style.display = 'none';
         document.getElementById('contentArea').innerHTML = `
-            <div class="filter-bar"><input type="text" id="searchUser" placeholder="Поиск по имени или телефону..." onkeyup="filterUsers()"></div>
-            <div class="table-container"><table id="usersTable"><thead><tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Статус</th><th>Дата регистрации</th><th>Действия</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+            <div class="filter-bar">
+                <input type="text" id="searchUser" placeholder="🔍 Поиск по имени или телефону..." onkeyup="filterUsers()">
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>ID</th><th>Имя</th><th>Телефон</th><th>Статус</th><th>Дата регистрации</th><th>Действия</th></tr></thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
         `;
         filterUsers();
     }
@@ -543,8 +566,11 @@
             return `<tr class="${ban ? 'banned-row' : ''}">
                 <td>#${u.id}</td><td>${u.name}</td><td>${u.phone}</td>
                 <td><span class="badge ${statusClass}">${status}</span></td>
-                <td>${new Date(u.createdAt || Date.now()).toLocaleDateString()}</td>
-                <td><button class="btn-icon" onclick="openBanModal(${u.id}, '${u.name}')"><i class="fas fa-gavel"></i></button> <button class="btn-icon" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button></td>
+                <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn-icon" onclick="openBanModal(${u.id}, '${u.name}')" title="Блокировка"><i class="fas fa-gavel"></i></button>
+                    <button class="btn-icon" onclick="deleteUser(${u.id})" title="Удалить"><i class="fas fa-trash"></i></button>
+                </td>
             </tr>`;
         }).join('');
         if(filtered.length === 0) document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Нет пользователей</td></tr>';
@@ -552,14 +578,9 @@
 
     function openBanModal(userId, userName) {
         currentBanUser = userId;
-        document.getElementById('banUserName').innerText = `Пользователь: ${userName}`;
+        document.getElementById('banUserName').innerHTML = `Пользователь: ${userName}`;
         document.getElementById('banModal').style.display = 'flex';
     }
-
-    document.getElementById('ban24hBtn').onclick = () => { if(currentBanUser) banUser(currentBanUser, 24); document.getElementById('banModal').style.display = 'none'; };
-    document.getElementById('banForeverBtn').onclick = () => { if(currentBanUser) banUser(currentBanUser, null); document.getElementById('banModal').style.display = 'none'; };
-    document.getElementById('unbanBtn').onclick = () => { if(currentBanUser) unbanUser(currentBanUser); document.getElementById('banModal').style.display = 'none'; };
-    document.getElementById('closeBanModal').onclick = () => { document.getElementById('banModal').style.display = 'none'; };
 
     function deleteUser(id) { if(confirm("Удалить клиента навсегда?")) { users = users.filter(u => u.id !== id); bannedUsers = bannedUsers.filter(b => b.userId !== id); saveAll(); renderUsers(); showToast("Клиент удалён"); } }
 
@@ -568,9 +589,17 @@
         document.getElementById('actionBtn').style.display = 'none';
         document.getElementById('contentArea').innerHTML = `
             <div class="filter-bar">
-                <select id="statusFilter" onchange="filterOrders()"><option value="">Все статусы</option><option>Новый</option><option>В обработке</option><option>Доставлен</option><option>Завершён</option></select>
+                <select id="statusFilter" onchange="filterOrders()">
+                    <option value="">Все статусы</option>
+                    <option>Новый</option><option>В обработке</option><option>Доставлен</option><option>Завершён</option>
+                </select>
             </div>
-            <div class="table-container"><table id="ordersTable"><thead><tr><th>ID</th><th>Клиент</th><th>Телефон</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr></thead><tbody id="ordersTableBody"></tbody></table></div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>ID</th><th>Клиент</th><th>Телефон</th><th>Сумма</th><th>Статус</th><th>Действия</th></tr></thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
         `;
         filterOrders();
     }
@@ -582,14 +611,14 @@
             <tr>
                 <td>#${o.id}</td><td>${o.customerName}</td><td>${o.customerPhone}</td>
                 <td>${o.total.toLocaleString()} ₽</td>
-                <td><select onchange="updateOrderStatus(${o.id}, this.value)" class="badge" style="background:#334155;">${['Новый','В обработке','Доставлен','Завершён'].map(s => `<option ${o.status===s ? 'selected' : ''}>${s}</option>`).join('')}</td>
-                <td><button class="btn-icon" onclick="viewOrderDetails(${o.id})"><i class="fas fa-eye"></i></button> <button class="btn-icon" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button></td>
+                <td><select onchange="updateOrderStatus(${o.id}, this.value)" style="background:#334155; border:1px solid #475569; border-radius:12px; padding:4px 8px; color:white;">${['Новый','В обработке','Доставлен','Завершён'].map(s => `<option ${o.status===s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
+                <td><button class="btn-icon" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i></button> <button class="btn-icon" onclick="deleteOrder(${o.id})"><i class="fas fa-trash"></i></button></td>
             </tr>
         `).join('');
         if(filtered.length === 0) document.getElementById('ordersTableBody').innerHTML = '<tr><td colspan="6" class="empty-state">Нет заказов</td></tr>';
     }
 
-    function viewOrderDetails(id) { let o = orders.find(o => o.id === id); if(o) alert(`Заказ #${o.id}\nКлиент: ${o.customerName}\nТелефон: ${o.customerPhone}\nАдрес: ${o.address}\nТовары: ${o.items?.map(i => `${i.name} x${i.qty}`).join(', ')}\nСумма: ${o.total} ₽\nСтатус: ${o.status}`); }
+    function viewOrder(id) { let o = orders.find(o => o.id === id); if(o) alert(`📦 ЗАКАЗ #${o.id}\n\nКлиент: ${o.customerName}\nТелефон: ${o.customerPhone}\nАдрес: ${o.address}\nТовары: ${o.items?.map(i => `${i.name} x${i.qty}`).join(', ')}\nСумма: ${o.total.toLocaleString()} ₽\nСтатус: ${o.status}\nДата: ${new Date(o.createdAt).toLocaleString()}`); }
     function updateOrderStatus(id, status) { let order = orders.find(o => o.id === id); if(order) { order.status = status; saveAll(); filterOrders(); showToast("Статус обновлён"); } }
     function deleteOrder(id) { if(confirm("Удалить заказ?")) { orders = orders.filter(o => o.id !== id); saveAll(); renderOrders(); showToast("Заказ удалён"); } }
 
@@ -604,10 +633,15 @@
             });
         }
         document.getElementById('contentArea').innerHTML = `
-            <div class="table-container"><table><thead><tr><th>Товар</th><th>Пользователь</th><th>Рейтинг</th><th>Отзыв</th><th>Дата</th><th>Действия</th></tr></thead><tbody>
-                ${allReviews.map(r => `<tr><td>${r.productName}</td><td>${r.userName}</td><td>${'★'.repeat(r.rating)}</td><td>${r.text.substring(0,50)}...</td><td>${r.date}</td><td><button class="btn-icon" onclick="deleteReview('${r.productId}', ${r.reviewIdx})"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
-                ${allReviews.length === 0 ? '<tr><td colspan="6" class="empty-state">Нет отзывов</td></tr>' : ''}
-            </tbody></table></div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Товар</th><th>Пользователь</th><th>Рейтинг</th><th>Отзыв</th><th>Дата</th><th>Действия</th></tr></thead>
+                    <tbody>
+                        ${allReviews.map(r => `<tr><td>${r.productName}</td><td>${r.userName}</td><td>${'★'.repeat(r.rating)}</td><td>${r.text.substring(0,50)}...</td><td>${r.date}</td>}<button class="btn-icon" onclick="deleteReview('${r.productId}', ${r.reviewIdx})"><i class="fas fa-trash"></i></button></td></tr>`).join('')}
+                        ${allReviews.length === 0 ? '<tr><td colspan="6" class="empty-state">Нет отзывов</td>' : ''}
+                    </tbody>
+                </table>
+            </div>
         `;
     }
 
@@ -621,22 +655,22 @@
                 <h3>⚙️ Глобальные настройки</h3>
                 <div style="margin:20px 0;"><button class="btn-danger" onclick="clearAllData()">🗑️ Очистить ВСЕ данные</button> <span style="margin-left:12px; color:#94A3B8;">Удалить товары, клиентов, заказы, отзывы, баны</span></div>
                 <div><button class="btn-primary" onclick="exportData()">📥 Экспорт данных (JSON)</button> <button class="btn-primary" onclick="importData()" style="margin-left:12px;">📤 Импорт данных</button><input type="file" id="importFile" style="display:none;" accept=".json"></div>
-                <div style="margin-top:20px;"><button class="btn-warning" onclick="resetDemoData()">🔄 Загрузить демо-данные</button></div>
+                <div style="margin-top:20px;"><button class="btn-warning" onclick="resetToDefault()">🔄 Сбросить до демо-данных</button></div>
             </div>
         `;
     }
 
     function clearAllData() { if(confirm("ПОЛНОСТЬЮ ОЧИСТИТЬ ВСЕ ДАННЫЕ?")) { products = []; users = []; orders = []; reviews = {}; bannedUsers = []; saveAll(); renderDashboard(); showToast("Все данные очищены"); } }
-    function exportData() { let data = { products, users, orders, reviews, bannedUsers }; let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)])); a.download = 'simmarket_full_backup.json'; a.click(); }
+    function exportData() { let data = { products, users, orders, reviews, bannedUsers }; let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)])); a.download = 'simmarket_backup.json'; a.click(); }
     function importData() { document.getElementById('importFile').click(); document.getElementById('importFile').onchange = (e) => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = (ev) => { let data = JSON.parse(ev.target.result); if(data.products) products = data.products; if(data.users) users = data.users; if(data.orders) orders = data.orders; if(data.reviews) reviews = data.reviews; if(data.bannedUsers) bannedUsers = data.bannedUsers; saveAll(); showToast("Данные импортированы"); renderDashboard(); }; reader.readAsText(file); }; }
-    function resetDemoData() { if(confirm("Загрузить демо-данные?")) { products = [{ id:1, name:"iPhone 15", price:79990, oldPrice:89990, image:"https://images.pexels.com/photos/699122/pexels-photo-699122.jpeg?w=200&h=150&fit=crop", category:"Смартфоны", brand:"Apple", specs:[] }]; users = []; orders = []; reviews = {}; bannedUsers = []; saveAll(); renderDashboard(); showToast("Демо-данные загружены"); } }
+    function resetToDefault() { if(confirm("Сбросить все данные до демо-версии?")) { location.reload(); } }
 
     // ========== NAVIGATION ==========
     function switchTab(tab) {
         currentTab = tab;
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         document.querySelector(`.nav-item[data-tab="${tab}"]`).classList.add('active');
-        let titles = { dashboard:'Панель управления', products:'Товары (полный контроль)', users:'Клиенты (бан/разбан)', orders:'Заказы', reviews:'Отзывы', settings:'Настройки' };
+        let titles = { dashboard:'Панель управления', products:'Управление товарами', users:'Управление клиентами', orders:'Управление заказами', reviews:'Управление отзывами', settings:'Настройки' };
         document.getElementById('pageTitle').innerText = titles[tab];
         if(tab === 'dashboard') renderDashboard();
         else if(tab === 'products') renderProducts();
@@ -646,21 +680,37 @@
         else if(tab === 'settings') renderSettings();
     }
 
+    // Global functions for inline calls
+    window.updateProduct = updateProduct;
+    window.editProduct = editProduct;
+    window.changeProductImage = changeProductImage;
+    window.deleteProduct = deleteProduct;
+    window.filterProducts = filterProducts;
+    window.filterUsers = filterUsers;
+    window.filterOrders = filterOrders;
+    window.openBanModal = openBanModal;
+    window.deleteUser = deleteUser;
+    window.viewOrder = viewOrder;
+    window.updateOrderStatus = updateOrderStatus;
+    window.deleteOrder = deleteOrder;
+    window.deleteReview = deleteReview;
+    window.clearAllData = clearAllData;
+    window.exportData = exportData;
+    window.importData = importData;
+    window.resetToDefault = resetToDefault;
+
     document.querySelectorAll('.nav-item').forEach(item => { item.onclick = () => switchTab(item.dataset.tab); });
     document.getElementById('menuToggle').onclick = () => document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('addSpecBtn').onclick = () => { let div = document.createElement('div'); div.className = 'spec-group'; div.innerHTML = '<input placeholder="Характеристика"><input placeholder="Значение"><button onclick="this.parentElement.remove()">✖</button>'; document.getElementById('specsContainer').appendChild(div); };
     document.getElementById('saveProductBtn').onclick = saveProduct;
     document.getElementById('closeModal').onclick = () => document.getElementById('productModal').style.display = 'none';
-
-    window.viewOrder = viewOrderDetails;
-    window.viewOrderDetails = viewOrderDetails;
-    window.updateProductPrice = updateProductPrice;
-    window.changeProductImage = changeProductImage;
-    window.filterProducts = filterProducts;
-    window.filterUsers = filterUsers;
-    window.filterOrders = filterOrders;
+    document.getElementById('ban24hBtn').onclick = () => { if(currentBanUser) banUser(currentBanUser, 24); document.getElementById('banModal').style.display = 'none'; };
+    document.getElementById('banForeverBtn').onclick = () => { if(currentBanUser) banUser(currentBanUser, null); document.getElementById('banModal').style.display = 'none'; };
+    document.getElementById('unbanBtn').onclick = () => { if(currentBanUser) unbanUser(currentBanUser); document.getElementById('banModal').style.display = 'none'; };
+    document.getElementById('closeBanModal').onclick = () => { document.getElementById('banModal').style.display = 'none'; };
 
     switchTab('dashboard');
+    saveAll();
 </script>
 </body>
 </html>
